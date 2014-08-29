@@ -2,7 +2,19 @@ Fs       = require 'fs'
 OptParse = require 'optparse'
 Path     = require 'path'
 MewBot   = require './mewbot.coffee'
+Fse      = require 'fs.extra'
 
+checkDirectory = (path)->
+	dataFile = Path.join __dirname,"..",path
+	Fs.exists dataFile,(exists)->
+		if exists is false
+			Fse.mkdirRecursive dataFile
+
+checkDirectory "/script"
+checkDirectory "/var"
+checkDirectory "/var/run"
+checkDirectory "/var/log"
+checkDirectory "/var/data"
 
 Switches = [
     [ "-t", "--test testcase", "test case to run" ],
