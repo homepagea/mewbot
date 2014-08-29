@@ -60,7 +60,8 @@ if Options.test and Options.test.length
 			if files and files.length
 				testPathArray = []
 				for file in files
-					testPathArray.push Path.join(__dirname,"..","testrc",file)
+					if Path.extname(file) is ".coffee"
+						testPathArray.push Path.join(__dirname,"..","testrc",file)
 				mewbot.test.runTest testPathArray,(err,result)->
 					process.exit 0
 			else
