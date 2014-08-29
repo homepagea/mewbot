@@ -1,0 +1,25 @@
+#!/bin/bash
+PRG="$0"
+PRGDIR=`dirname "$PRG"`
+PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
+
+mkdir -p $PRGDIR/../var/log
+mkdir -p $PRGDIR/../var/conf
+mkdir -p $PRGDIR/../var/run
+
+case $1 in
+    "start" | "stop" | "restart")
+        $PRGDIR/../node_modules/.bin/forever $1 \
+           -p /var/run/forever \
+           --pidfile $PRGDIR/var/run/otherbot_$HUBOT_NAME.pid \
+           -l $PRGDIR/var/log/otherbot_$HUBOT_NAME.log -a \
+           -c $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee
+    ;;
+    "run" )
+        $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee 
+    ;;
+    "test" )
+        $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee --test all
+    ;;
+    * ) echo "usage: mewbot run|start|stop|retart" ;;
+esac
