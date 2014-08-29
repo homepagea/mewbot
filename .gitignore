@@ -3,3 +3,4 @@
 /var/run
 /mewbot.sublime-project
 /mewbot.sublime-workspace
+/script/*

@@ -1,8 +1,12 @@
 Path  = require 'path'
 Fs    = require 'fs'
+Fse   = require 'fs.extra'
 
 class TestInstance
     constructor :(@mew)->
+
+    getTestFile : (pathPrefix)->
+        return Path.join __dirname,"..","script",pathPrefix
 
 
 class TestManager
