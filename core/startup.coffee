@@ -6,11 +6,11 @@ Fse      = require 'fs.extra'
 
 checkDirectory = (path)->
 	dataFile = Path.join __dirname,"..",path
-	Fs.exists dataFile,(exists)->
-		if exists is false
-			Fse.mkdirRecursive dataFile
+	if Fs.existsSync(dataFile) is false
+		Fse.mkdirRecursiveSync dataFile
 
 checkDirectory "/script"
+checkDirectory "/testrc"
 checkDirectory "/var"
 checkDirectory "/var/run"
 checkDirectory "/var/log"
@@ -56,18 +56,18 @@ mewbot = new MewBot Options.adapter
 
 if Options.test and Options.test.length
 	if Options.test is "all"
-		Fs.readdir Path.join(__dirname,"..","script"),(err,files)->
+		Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
 			if files and files.length
 				testPathArray = []
 				for file in files
-					testPathArray.push Path.join(__dirname,"..","script",file)
+					testPathArray.push Path.join(__dirname,"..","testrc",file)
 				mewbot.test.runTest testPathArray,(err,result)->
 					process.exit 0
 			else
 				console.log "there is no test"
 				process.exit 0
 	else
-		testPath = Path.join(__dirname,"..","script","#{Options.test}.coffee")
+		testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
 		Fs.exists testPath,(exists)=>
 			if exists
 				mewbot.test.runTest [testPath],(err,result)->

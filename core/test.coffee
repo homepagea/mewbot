@@ -6,7 +6,7 @@ class TestInstance
     constructor :(@mew)->
 
     getTestFile : (pathPrefix)->
-        return Path.join __dirname,"..","script",pathPrefix
+        return Path.join __dirname,"..","testrc",pathPrefix
 
 
 class TestManager

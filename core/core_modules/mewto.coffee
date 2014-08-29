@@ -15,7 +15,6 @@ class MewToModule
             "!uploadIcon",
             "getUserInfo",
             "getFriendshipByUserId",
-            "makeFriends",
             "makeFriendsByUserDomain",
             "updateFriendshipStatusById",
             "updateFriendshipStatusByUserId",
@@ -29,6 +28,7 @@ class MewToModule
             "findMewTaskToFriendshipById",
             "findMewTaskFromVendorById"
         ]
+        
     newClientInstance: (rootURL,username,password)->
         userAgent = process.env.AINETWORK_DEFAULT_UA || "otherbot/crawler"
         instance  = new OTHERWebInstance userAgent,rootURL,username,password
