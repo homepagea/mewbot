@@ -77,5 +77,6 @@ if Options.test and Options.test.length
 				console.log "target test does not exists"
 				process.exit 0
 else
-	console.log "run mewbot"
+	console.log "mewbot start running"
+	
 

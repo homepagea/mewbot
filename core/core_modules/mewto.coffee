@@ -26,7 +26,8 @@ class MewToModule
             "saveMewTask",
             "findMewTaskToGroupById",
             "findMewTaskToFriendshipById",
-            "findMewTaskFromVendorById"
+            "findMewTaskFromVendorById",
+            "updateDeviceSessionId"
         ]
         
     newClientInstance: (rootURL,username,password)->
