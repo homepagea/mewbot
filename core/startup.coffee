@@ -5,9 +5,9 @@ MewBot   = require './mewbot.coffee'
 Fse      = require 'fs.extra'
 
 checkDirectory = (path)->
-	dataFile = Path.join __dirname,"..",path
-	if Fs.existsSync(dataFile) is false
-		Fse.mkdirRecursiveSync dataFile
+    dataFile = Path.join __dirname,"..",path
+    if Fs.existsSync(dataFile) is false
+        Fse.mkdirRecursiveSync dataFile
 
 checkDirectory "/script"
 checkDirectory "/testrc"
@@ -55,28 +55,40 @@ if Options.help
 mewbot = new MewBot Options.adapter
 
 if Options.test and Options.test.length
-	if Options.test is "all"
-		Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
-			if files and files.length
-				testPathArray = []
-				for file in files
-					if Path.extname(file) is ".coffee"
-						testPathArray.push Path.join(__dirname,"..","testrc",file)
-				mewbot.test.runTest testPathArray,(err,result)->
-					process.exit 0
-			else
-				console.log "there is no test"
-				process.exit 0
-	else
-		testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
-		Fs.exists testPath,(exists)=>
-			if exists
-				mewbot.test.runTest [testPath],(err,result)->
-					process.exit 0
-			else
-				console.log "target test does not exists"
-				process.exit 0
+    if Options.test is "all"
+        Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
+            if files and files.length
+                testPathArray = []
+                files.sort (a,b)->
+                    amatch = a.match /^\[(\d)\].+\.coffee$/
+                    bmatch = b.match /^\[(\d)\].+\.coffee$/
+                    if amatch and bmatch
+                        return parseInt(amatch[1])-parseInt(bmatch[1])
+                    else if amatch
+                        return -1
+                    else if bmatch
+                        return 1
+                    else
+                        return 0
+                console.log files
+                for file in files
+                    if Path.extname(file) is ".coffee"
+                        testPathArray.push Path.join(__dirname,"..","testrc",file)
+                #mewbot.test.runTest testPathArray,(err,result)->
+                #    process.exit 0
+            else
+                console.log "there is no test"
+                process.exit 0
+    else
+        testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
+        Fs.exists testPath,(exists)=>
+            if exists
+                mewbot.test.runTest [testPath],(err,result)->
+                    process.exit 0
+            else
+                console.log "target test does not exists"
+                process.exit 0
 else
-	console.log "mewbot start running"
-	
+    console.log "mewbot start running"
+    
 
