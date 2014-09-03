@@ -74,8 +74,8 @@ if Options.test and Options.test.length
                 for file in files
                     if Path.extname(file) is ".coffee"
                         testPathArray.push Path.join(__dirname,"..","testrc",file)
-                #mewbot.test.runTest testPathArray,(err,result)->
-                #    process.exit 0
+                mewbot.test.runTest testPathArray,(err,result)->
+                    process.exit 0
             else
                 console.log "there is no test"
                 process.exit 0
