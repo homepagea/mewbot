@@ -70,7 +70,6 @@ if Options.test and Options.test.length
                         return 1
                     else
                         return 0
-                console.log files
                 for file in files
                     if Path.extname(file) is ".coffee"
                         testPathArray.push Path.join(__dirname,"..","testrc",file)
