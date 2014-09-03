@@ -40,7 +40,7 @@ class B2B2CModule
             "!uploadPhoto",
             "updatePhoto",
             "searchProduct",
-            "searchAccessory",
+            "searchProductUsedByAccessory",
             "getTraderInfo",
             "saveTraderInfo",
             "updateTraderPassword",
@@ -53,7 +53,9 @@ class B2B2CModule
             "listAllActivePaymentAccount",
             "updatePaymentAccountStatus",
             "updateVIPLevelDiscount",
-            "listAvailableVIPLevelDiscount"
+            "listAvailableVIPLevelDiscount",
+            "removeProductTypeAttributeKey",
+            "getAllAccessories"
         ]
         @b2b2c_trader_function = [
             "register",
@@ -68,6 +70,7 @@ class B2B2CModule
         instance  = new OTHERWebInstance userAgent,rootURL,username,password
         instance.compileObject "bizadmin",@b2b2c_admin_function
         return instance
+        
     newTraderInstance : (rootURL,username,password)->
         userAgent = process.env.AINETWORK_DEFAULT_UA || "otherbot/crawler"
         instance  = new OTHERWebInstance userAgent,rootURL,username,password
