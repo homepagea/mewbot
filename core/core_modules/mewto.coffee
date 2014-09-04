@@ -28,7 +28,9 @@ class MewToModule
             "findMewTaskToFriendshipById",
             "findMewTaskFromVendorById",
             "updateDeviceSessionId",
-            "updateUserPrivacy"
+            "updateUserPrivacy",
+            "updateMyName",
+            "updateFriendshipAlias"
         ]
         
     newClientInstance: (rootURL,username,password)->
