@@ -71,15 +71,9 @@ class TestManager
                 console.log "success : #{testExecResult.success}"
                 console.log "failed  : #{testExecResult.failed}"
                 console.log "error   : #{testExecResult.error}"
-                errorReport = {}
-                for testcase of testExecResult
-                    console.log testExecResult[testcase]
-                    if testExecResult[testcase].result is "error" or testExecResult[testcase].result is "failed" 
-                        errorReport[testcase] = testExecResult[testcase]
-                if testExecResult.error+testExecResult.failed isnt 0
-                    console.log "error report : "
-                    console.log JSON.stringify(errorReport,null,4)
-                callback(errorReport)
+                console.log "detail  :"
+                console.log JSON.stringify(testExecResult,null,4)
+                callback(testExecResult)
         stdin = process.openStdin()
         runTestCallback()
 
