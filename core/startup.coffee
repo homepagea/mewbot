@@ -4,6 +4,7 @@ Path     = require 'path'
 MewBot   = require './mewbot.coffee'
 Fse      = require 'fs.extra'
 
+
 checkDirectory = (path)->
     dataFile = Path.join __dirname,"..",path
     if Fs.existsSync(dataFile) is false
@@ -20,6 +21,7 @@ Switches = [
     [ "-t", "--test testcase", "test case to run" ],
     [ "-r", "--role client", "role of this mewbot" ],
     [ "-h", "--help", "print help information" ],
+    [ "-u", "--update", "update mewbot" ]
 ]
 
 Options = 
@@ -28,6 +30,7 @@ Options =
     role    :     process.env.MEWBOT_ROLE    or "client"
     version :     false
     help    :     false
+    update  :     false
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -38,6 +41,8 @@ Parser.on "test",(opt,value)->
 Parser.on "role",(opt,value)->
     Options.role = value
 
+Parser.on "update",(opt,value)->
+    Options.update = true
 
 Parser.on "help",(opt,value)->
     Options.help = true
@@ -54,7 +59,10 @@ if Options.help
 
 mewbot = new MewBot Options.adapter
 
-if Options.test and Options.test.length
+if Options.update
+    console.log "update mewbot"
+    
+else if Options.test and Options.test.length
     if Options.test is "all"
         Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
             if files and files.length
