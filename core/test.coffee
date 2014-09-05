@@ -4,7 +4,7 @@ Fse   = require 'fs.extra'
 
 class TestInstance
     constructor :(@mew)->
-
+        
     getTestFile : (pathPrefix)->
         return Path.join __dirname,"..","testrc",pathPrefix
 
