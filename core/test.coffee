@@ -17,9 +17,7 @@ class TestManager
         runTestCallback = =>
             testScript = testScriptArray.shift()
             if testScript
-
                 resolvedName = require.resolve(testScript)
-
                 if require.cache[resolvedName]
                     delete require.cache[resolvedName]
                 testName = Path.basename(testScript).replace(Path.extname(testScript),"")
