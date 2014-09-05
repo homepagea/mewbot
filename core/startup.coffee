@@ -59,43 +59,41 @@ if Options.help
 
 mewbot = new MewBot Options.adapter
 
-if Options.update
-    console.log "update mewbot"
-    
-else if Options.test and Options.test.length
-    if Options.test is "all"
-        Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
-            if files and files.length
-                testPathArray = []
-                files.sort (a,b)->
-                    amatch = a.match /^\[(\d)\].+\.coffee$/
-                    bmatch = b.match /^\[(\d)\].+\.coffee$/
-                    if amatch and bmatch
-                        return parseInt(amatch[1])-parseInt(bmatch[1])
-                    else if amatch
-                        return -1
-                    else if bmatch
-                        return 1
-                    else
-                        return 0
-                for file in files
-                    if Path.extname(file) is ".coffee"
-                        testPathArray.push Path.join(__dirname,"..","testrc",file)
-                mewbot.test.runTest testPathArray,(err,result)->
+mewbot.init (err)->
+    if Options.update
+        console.log "update mewbot"
+    else if Options.test and Options.test.length
+        if Options.test is "all"
+            Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
+                if files and files.length
+                    testPathArray = []
+                    files.sort (a,b)->
+                        amatch = a.match /^\[(\d)\].+\.coffee$/
+                        bmatch = b.match /^\[(\d)\].+\.coffee$/
+                        if amatch and bmatch
+                            return parseInt(amatch[1])-parseInt(bmatch[1])
+                        else if amatch
+                            return -1
+                        else if bmatch
+                            return 1
+                        else
+                            return 0
+                    for file in files
+                        if Path.extname(file) is ".coffee"
+                            testPathArray.push Path.join(__dirname,"..","testrc",file)
+                    mewbot.test.runTest testPathArray,(err,result)->
+                        process.exit 0
+                else
+                    console.log "there is no test"
                     process.exit 0
-            else
-                console.log "there is no test"
-                process.exit 0
+        else
+            testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
+            Fs.exists testPath,(exists)=>
+                if exists
+                    mewbot.test.runTest [testPath],(err,result)->
+                        process.exit 0
+                else
+                    console.log "target test does not exists"
+                    process.exit 0
     else
-        testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
-        Fs.exists testPath,(exists)=>
-            if exists
-                mewbot.test.runTest [testPath],(err,result)->
-                    process.exit 0
-            else
-                console.log "target test does not exists"
-                process.exit 0
-else
-    console.log "mewbot start running"
-    
-
+        console.log "mewbot start running"

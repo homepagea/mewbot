@@ -7,13 +7,16 @@ Fs            = require 'fs'
 
 class MewBot
     constructor : (adapter)->
+        @brain  = new Brain @
+        @mm     = new ModuleManager @
+        @test   = new TestManager @
+
+    init : (callback)->
         @changeProfile "default",(err)=>
             if err
                 console.log err
-            @brain  = new Brain @
-            @mm     = new ModuleManager @
-            @test   = new TestManager @
-
+            callback()
+            
     changeProfile : (profileName,callback)->
         profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")
         Fs.exists profileFile,(exists)=>
