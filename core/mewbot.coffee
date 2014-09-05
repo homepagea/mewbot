@@ -26,8 +26,9 @@ class MewBot
                         fileContent = data.toString()
                         if fileContent and fileContent.length
                             for confLine in fileContent.split("\n")
-                                conEntrys = confLine.split("=")
-                                process.env[conEntrys[0]]=conEntrys[1]
+                                if confLine.indexOf("=")  > 0
+                                    conEntrys = confLine.split("=")
+                                    process.env[conEntrys[0].replace(/(^\s*)|(\s*$)/g,"")]=conEntrys[1].replace(/(^\s*)|(\s*$)/g,"")
                             if callback
                                 callback()
                         else
