@@ -21,8 +21,8 @@ Switches = [
     [ "-t", "--test testcase", "test case to run" ],
     [ "-r", "--role client", "role of this mewbot" ],
     [ "-h", "--help", "print help information" ],
-    [ "-u", "--update", "update mewbot" ],
-    [ "-p", "--profile", "profile of this mewbot" ]
+    [ "-p", "--profile profile", "config profile of this mewbot" ],
+    [ "-u", "--update", "update mewbot" ]
 ]
 
 Options = 
@@ -40,6 +40,9 @@ Parser.banner = "Usage mewbot [options]"
 Parser.on "test",(opt,value)->
     Options.test = value
 
+Parser.on "profile",(opt,value)->
+    Options.profile = value
+
 Parser.on "role",(opt,value)->
     Options.role = value
 
@@ -48,9 +51,6 @@ Parser.on "update",(opt,value)->
 
 Parser.on "help",(opt,value)->
     Options.help = true
-
-Parser.on "profile",(opt,value)->
-    Options.profile = value
 
 Parser.parse process.argv
 
