@@ -21,7 +21,8 @@ Switches = [
     [ "-t", "--test testcase", "test case to run" ],
     [ "-r", "--role client", "role of this mewbot" ],
     [ "-h", "--help", "print help information" ],
-    [ "-u", "--update", "update mewbot" ]
+    [ "-u", "--update", "update mewbot" ],
+    [ "-p", "--profile", "profile of this mewbot" ]
 ]
 
 Options = 
@@ -31,6 +32,7 @@ Options =
     version :     false
     help    :     false
     update  :     false
+    profile :     process.env.MEWBOT_PROFILE or "default"
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -47,6 +49,9 @@ Parser.on "update",(opt,value)->
 Parser.on "help",(opt,value)->
     Options.help = true
 
+Parser.on "profile",(opt,value)->
+    Options.profile = value
+
 Parser.parse process.argv
 
 unless process.platform is "win32"
@@ -59,7 +64,7 @@ if Options.help
 
 mewbot = new MewBot Options.adapter
 
-mewbot.init (err)->
+mewbot.init Options.profile,(err)->
     if Options.update
         console.log "update mewbot"
     else if Options.test and Options.test.length

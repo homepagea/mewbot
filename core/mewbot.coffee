@@ -11,8 +11,8 @@ class MewBot
         @mm     = new ModuleManager @
         @test   = new TestManager @
 
-    init : (callback)->
-        @changeProfile "default",(err)=>
+    init : (profile,callback)->
+        @changeProfile profile,(err)=>
             if err
                 console.log err
             callback()
