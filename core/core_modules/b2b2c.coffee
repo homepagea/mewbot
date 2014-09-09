@@ -75,6 +75,7 @@ class B2B2CModule
         userAgent = process.env.AINETWORK_DEFAULT_UA || "otherbot/crawler"
         instance  = new OTHERWebInstance userAgent,rootURL,username,password
         instance.compileObject "biztrader",@b2b2c_trader_function
+        instance.loginStatus = "complete"
         return instance
 
     newStoreInstance : (rootURL,authType,authKey,authSecret)->
