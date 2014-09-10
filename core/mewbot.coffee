@@ -3,6 +3,7 @@ ModuleManager = require './mm.coffee'
 TestManager   = require './test.coffee'
 Path          = require 'path'
 Fs            = require 'fs'
+Log           = require 'log'
 
 
 class MewBot
@@ -10,6 +11,7 @@ class MewBot
         @brain  = new Brain @
         @mm     = new ModuleManager @
         @test   = new TestManager @
+        @logger = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
 
     init : (profile,callback)->
         @changeProfile profile,(err)=>

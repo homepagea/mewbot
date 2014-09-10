@@ -35,14 +35,15 @@ class ModuleManager
                     aimodule = new aimoduleClass @mewbot
                     aimoduleName = aifile.substr(0,aifile.indexOf(".coffee"))
                     @actionModuleContainer[aimoduleName]=aimodule
-                    console.log "loading core module [#{aimoduleName}] success"
+                    @mewbot.logger.info "loading core module [#{aimoduleName}] success"
                 catch error
-                    console.log "Unable to load core module : #{aimoduleName} : #{error.stack} "
+                    @mewbot.logger.error error
+                    @mewbot.logger.error "Unable to load core module : #{aimoduleName} : #{error.stack} "
             for moduleInstance in @moduleInstanceContainer
                 @initModuleInstance(moduleInstance)
             @moduleInitComplete = true
         else
-            console.log "ai_modules folder not found "
+            @mewbot.logger.info "ai_modules folder not found "
 
     initMewModule : (moduleName)->
         moduleFolder = Path.join __dirname,"..","mew_modules",moduleName
@@ -51,7 +52,7 @@ class ModuleManager
                 if typeof @actionModuleContainer[moduleName] is 'undefined'
                     aimoduleClass=require moduleFolder
                     @actionModuleContainer[moduleName] = new aimoduleClass @mewbot
-                    console.log "loading mew module [#{moduleName}] success"
+                    @mewbot.logger.info "loading mew module [#{moduleName}] success"
                 return @actionModuleContainer[moduleName]
             catch error
                 throw new Error(error)
