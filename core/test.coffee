@@ -27,9 +27,14 @@ class TestManager
                     if typeof testScriptInstance is 'function'
                         testcase = new TestInstance @mewbot
                         try
-                            testScriptInstance.call testcase,(err)->
+                            testScriptInstance.call testcase,(err)=>
                                 if err
-                                    @mewbot.logger.error "#{ex.stack}"
+                                    if typeof err is 'string'
+                                        @mewbot.logger.error error
+                                    else if err.stack
+                                        @mewbot.logger.error "#{err.stack}"
+                                    else
+                                        @mewbot.logger.error JSON.stringify(err)
                                     testExecResult.testcase[testName] = {
                                         result : "failed",
                                         error  : err
@@ -42,6 +47,7 @@ class TestManager
                                     testExecResult.success = testExecResult.success + 1
                                 runTestCallback()
                         catch ex
+                            @mewbot.logger.error "#{ex.stack}"
                             testExecResult.testcase[testName] = {
                                 result : "failed",
                                 error  : ex
