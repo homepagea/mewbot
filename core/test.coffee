@@ -21,7 +21,7 @@ class TestManager
                 if require.cache[resolvedName]
                     delete require.cache[resolvedName]
                 testName = Path.basename(testScript).replace(Path.extname(testScript),"")
-                console.log "running test : #{testName}"
+                @mewbot.logger.info "running test : #{testName}"
                 try
                     testScriptInstance = require resolvedName
                     if typeof testScriptInstance is 'function'
@@ -55,7 +55,7 @@ class TestManager
                         testExecResult.error = testExecResult.error + 1
                         runTestCallback()
                 catch ex
-                    console.log "#{ex.stack}"
+                    @mewbot.logger.error "#{ex.stack}"
                     testExecResult.testcase[testName] = {
                         result : "error",
                         error  : ex
@@ -64,13 +64,13 @@ class TestManager
                     runTestCallback()
 
             else
-                console.log "test running finished : "
-                console.log "total   : #{testExecResult.error+testExecResult.success+testExecResult.failed}"
-                console.log "success : #{testExecResult.success}"
-                console.log "failed  : #{testExecResult.failed}"
-                console.log "error   : #{testExecResult.error}"
-                console.log "detail  :"
-                console.log JSON.stringify(testExecResult,null,4)
+                @mewbot.logger.info "test running finished : "
+                @mewbot.logger.info "total   : #{testExecResult.error+testExecResult.success+testExecResult.failed}"
+                @mewbot.logger.info "success : #{testExecResult.success}"
+                @mewbot.logger.info "failed  : #{testExecResult.failed}"
+                @mewbot.logger.info "error   : #{testExecResult.error}"
+                @mewbot.logger.info "detail  :"
+                @mewbot.logger.info JSON.stringify(testExecResult,null,4)
                 callback(testExecResult)
         stdin = process.openStdin()
         runTestCallback()
