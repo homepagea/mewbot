@@ -16,6 +16,7 @@ checkDirectory "/var"
 checkDirectory "/var/run"
 checkDirectory "/var/log"
 checkDirectory "/var/data"
+checkDirectory "/mew_modules"
 
 Switches = [
     [ "-t", "--test testcase", "test case to run" ],

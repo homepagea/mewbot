@@ -16,12 +16,14 @@ class ModuleManager
         @initCoreModules()
         
     module: (moduleName) ->
+        if typeof @actionModuleContainer[moduleName] is 'undefined'
+            @initMewModule moduleName
         moduleInstance = new MewModuleInstance(@mewbot,moduleName)
         if @moduleInitComplete
             @initModuleInstance moduleInstance
         else
             @moduleInstanceContainer.push moduleInstance
-        return moduleInstance
+            return moduleInstance
 
     initCoreModules : ->
         if Fs.existsSync Path.join(__dirname,"core_modules")
@@ -33,14 +35,28 @@ class ModuleManager
                     aimodule = new aimoduleClass @mewbot
                     aimoduleName = aifile.substr(0,aifile.indexOf(".coffee"))
                     @actionModuleContainer[aimoduleName]=aimodule
-                    console.log "loading ai module [#{aifile}] success"
+                    console.log "loading core module [#{aimoduleName}] success"
                 catch error
-                    console.log "Unable to load ai module : #{aifile} : #{error.stack} "
+                    console.log "Unable to load core module : #{aimoduleName} : #{error.stack} "
             for moduleInstance in @moduleInstanceContainer
                 @initModuleInstance(moduleInstance)
             @moduleInitComplete = true
         else
             console.log "ai_modules folder not found "
+
+    initMewModule : (moduleName)->
+        moduleFolder = Path.join __dirname,"..","mew_modules",moduleName
+        if Fs.existsSync moduleFolder
+            try
+                if typeof @actionModuleContainer[moduleName] is 'undefined'
+                    aimoduleClass=require moduleFolder
+                    @actionModuleContainer[moduleName] = new aimoduleClass @mewbot
+                    console.log "loading mew module [#{moduleName}] success"
+                return @actionModuleContainer[moduleName]
+            catch error
+                throw new Error(error)
+        else
+            throw new Error("module not found")
 
     initModuleInstance : (moduleInstance) ->
         moduleObject = @actionModuleContainer[moduleInstance.name()]
