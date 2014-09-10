@@ -64,7 +64,10 @@ Parser.on "module",(opt,value)->
     Options.module = value
 
 Parser.on "pack",(opt,value)->
-    Options.pack = value
+    if value
+        Options.pack = value
+    else
+        Options.pack = "pack-#{new Date().getTime()}"
 
 Parser.on "name",(opt,value)->
     Options.name = value
