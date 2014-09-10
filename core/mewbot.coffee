@@ -8,11 +8,11 @@ Log           = require 'log'
 
 class MewBot
     constructor : (adapter)->
+        @logger = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
         @brain  = new Brain @
         @mm     = new ModuleManager @
         @test   = new TestManager @
-        @logger = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-
+        
     init : (profile,callback)->
         @changeProfile profile,(err)=>
             if err
