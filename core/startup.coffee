@@ -26,7 +26,7 @@ Switches = [
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
     [ "-u", "--update", "update mewbot" ],
-    [ "-P", "--pack pack", "pack mewbot" ],
+    [ "-a", "--archive pack", "archive mewbot" ],
     [ "-m", "--module module", "check or get module from remote server" ]
 ]
 
@@ -38,8 +38,8 @@ Options =
     help       :     false
     update     :     false
     module     :     ""
-    pack       :     ""
-    name       :     "mewbot"
+    archive    :     ""
+    name       :     process.env.MEWBOT_NAME    or "mewbot"
     profile    :     process.env.MEWBOT_PROFILE or "default"
 
 Parser = new OptParse.OptionParser(Switches)
@@ -63,11 +63,11 @@ Parser.on "help",(opt,value)->
 Parser.on "module",(opt,value)->
     Options.module = value
 
-Parser.on "pack",(opt,value)->
+Parser.on "archive",(opt,value)->
     if value
-        Options.pack = value
+        Options.archive = value
     else
-        Options.pack = "pack-#{new Date().getTime()}"
+        Options.archive = "mewbot-#{new Date().getTime()}"
 
 Parser.on "name",(opt,value)->
     Options.name = value
@@ -87,14 +87,14 @@ mewbot = new MewBot Options.name,Options.adapter
 mewbot.init Options.profile,(err)->
     if Options.update
         console.log "update mewbot"
-    else if Options.pack.length
+    else if Options.archive.length
         archiver = mewbot.module("archiver")
-        packFile = mewbot.getTmpFile Options.pack
-        if Options.pack.indexOf(".zip") < 0
+        packFile = mewbot.getTmpFile Options.archive
+        if Options.archive.indexOf(".zip") < 0
             packFile = "#{packFile}.zip"
-        mewbot.logger.info "mewbot start pack at #{packFile}"
+        mewbot.logger.info "mewbot start archive at #{packFile}"
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
-            mewbot.logger.info "mewbot complete at #{packFile}"
+            mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
     else if Options.test and Options.test.length
         if Options.test is "all"

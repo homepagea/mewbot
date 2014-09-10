@@ -5,4 +5,4 @@ PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$
 
 
 
-$PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee $@
+$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee $@

@@ -9,17 +9,17 @@ mkdir -p $PRGDIR/../var/run
 
 case $1 in
     "start" | "stop" | "restart")
-        $PRGDIR/../node_modules/.bin/forever $1 \
+        $PRGDIR/../node_modules/forver/bin/forever $1 \
            -p /var/run/forever \
            --pidfile $PRGDIR/var/run/otherbot_$HUBOT_NAME.pid \
            -l $PRGDIR/var/log/otherbot_$HUBOT_NAME.log -a \
            -c $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee
     ;;
     "run" )
-        $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee 
+        $PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee 
     ;;
     "test" )
-        $PRGDIR/../node_modules/.bin/coffee $PRGDIR/../core/startup.coffee --test all
+        $PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee --test all
     ;;
     * ) echo "usage: mewbot run|start|stop|retart" ;;
 esac
