@@ -4,10 +4,11 @@ TestManager   = require './test.coffee'
 Path          = require 'path'
 Fs            = require 'fs'
 Log           = require 'log'
-
+Os            = require 'os'
+Fse           = require 'fs.extra'
 
 class MewBot
-    constructor : (adapter)->
+    constructor : (@name,@adapter)->
         @logger = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
         @brain  = new Brain @
         @mm     = new ModuleManager @
@@ -16,9 +17,37 @@ class MewBot
     init : (profile,callback)->
         @changeProfile profile,(err)=>
             if err
-                console.log err
-            callback()
+                @logger.error err
+            tmpFolder = @getTmpFile()
+            Fs.exists tmpFolder,(exists)=>
+                if exists is false
+                    Fse.mkdirRecursiveSync tmpFolder
+                callback()
+
+    getDataFile : (externalPath) ->
+        if externalPath
+            return Path.join(__dirname,"..","var","data",externalPath)
+        else
+            return Path.join(__dirname,"..","var","data")
             
+    makeDataDir : (path)->
+        dataFile = @getDataFile(path)
+        if Fs.existsSync(dataFile) is false
+            Fse.mkdirRecursiveSync dataFile
+        return dataFile
+
+    makeTmpDir : (path)->
+        dataFile = @getTmpFile(path)
+        if Fs.existsSync(dataFile) is false
+            Fse.mkdirRecursiveSync dataFile
+        return dataFile
+
+    getTmpFile : (path)->
+        if path
+            return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}",path)
+        else
+           return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}")
+
     changeProfile : (profileName,callback)->
         profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")
         Fs.exists profileFile,(exists)=>

@@ -19,21 +19,27 @@ checkDirectory "/var/data"
 checkDirectory "/mew_modules"
 
 Switches = [
+    [ "-n", "--name name", "name of this mewbot" ],
     [ "-t", "--test testcase", "test case to run" ],
     [ "-r", "--role client", "role of this mewbot" ],
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
-    [ "-u", "--update", "update mewbot" ]
+    [ "-u", "--update", "update mewbot" ],
+    [ "-P", "--pack pack", "pack mewbot" ],
+    [ "-m", "--module module", "check or get module from remote server" ]
 ]
 
 Options = 
-    adapter :     process.env.MEWBOT_ADAPTER or "shell"
-    test    :     process.env.MEWBOT_TEST    or ""
-    role    :     process.env.MEWBOT_ROLE    or "client"
-    version :     false
-    help    :     false
-    update  :     false
-    profile :     process.env.MEWBOT_PROFILE or "default"
+    adapter    :     process.env.MEWBOT_ADAPTER or "shell"
+    test       :     process.env.MEWBOT_TEST    or ""
+    role       :     process.env.MEWBOT_ROLE    or "client"
+    version    :     false
+    help       :     false
+    update     :     false
+    module     :     ""
+    pack       :     ""
+    name       :     "mewbot"
+    profile    :     process.env.MEWBOT_PROFILE or "default"
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -53,6 +59,15 @@ Parser.on "update",(opt,value)->
 Parser.on "help",(opt,value)->
     Options.help = true
 
+Parser.on "module",(opt,value)->
+    Options.module = value
+
+Parser.on "pack",(opt,value)->
+    Options.pack = value
+
+Parser.on "name",(opt,value)->
+    Options.name = value
+
 Parser.parse process.argv
 
 unless process.platform is "win32"
@@ -63,11 +78,20 @@ if Options.help
     console.log Parser.toString()
     process.exit 0
 
-mewbot = new MewBot Options.adapter
+mewbot = new MewBot Options.name,Options.adapter
 
 mewbot.init Options.profile,(err)->
     if Options.update
         console.log "update mewbot"
+    else if Options.pack.length
+        archiver = mewbot.module("archiver")
+        packFile = mewbot.getTmpFile Options.pack
+        if Options.pack.indexOf(".zip") < 0
+            packFile = "#{packFile}.zip"
+        mewbot.logger.info "mewbot start pack at #{packFile}"
+        archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
+            mewbot.logger.info "mewbot complete at #{packFile}"
+            process.exit 0
     else if Options.test and Options.test.length
         if Options.test is "all"
             Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
