@@ -29,6 +29,7 @@ class TestManager
                         try
                             testScriptInstance.call testcase,(err)->
                                 if err
+                                    @mewbot.logger.error "#{ex.stack}"
                                     testExecResult.testcase[testName] = {
                                         result : "failed",
                                         error  : err
@@ -64,13 +65,13 @@ class TestManager
                     runTestCallback()
 
             else
-                @mewbot.logger.info "test running finished : "
-                @mewbot.logger.info "total   : #{testExecResult.error+testExecResult.success+testExecResult.failed}"
-                @mewbot.logger.info "success : #{testExecResult.success}"
-                @mewbot.logger.info "failed  : #{testExecResult.failed}"
-                @mewbot.logger.info "error   : #{testExecResult.error}"
-                @mewbot.logger.info "detail  :"
-                @mewbot.logger.info JSON.stringify(testExecResult,null,4)
+                console.log "test running finished : "
+                console.log "total   : #{testExecResult.error+testExecResult.success+testExecResult.failed}"
+                console.log "success : #{testExecResult.success}"
+                console.log "failed  : #{testExecResult.failed}"
+                console.log "error   : #{testExecResult.error}"
+                console.log "detail  :"
+                console.log JSON.stringify(testExecResult,null,4)
                 callback(testExecResult)
         stdin = process.openStdin()
         runTestCallback()
