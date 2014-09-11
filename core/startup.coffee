@@ -22,7 +22,7 @@ checkDirectory "/mew_modules"
 Switches = [
     [ "-n", "--name name", "name of this mewbot" ],
     [ "-t", "--test testcase", "test case to run" ],
-    [ "-r", "--role client", "role of this mewbot" ],
+    [ "-r", "--role client|server", "role of this mewbot" ],
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
     [ "-u", "--update", "update mewbot" ],
@@ -96,6 +96,7 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
             mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
+
     else if Options.test and Options.test.length
         if Options.test is "all"
             Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
