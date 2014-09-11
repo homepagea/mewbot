@@ -30,7 +30,7 @@ class TestManager
                             testScriptInstance.call testcase,(err)=>
                                 if err
                                     if typeof err is 'string'
-                                        @mewbot.logger.error error
+                                        @mewbot.logger.error err
                                     else if err.stack
                                         @mewbot.logger.error "#{err.stack}"
                                     else
