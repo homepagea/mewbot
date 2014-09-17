@@ -1,21 +1,17 @@
 Fs = require 'fs'
 Path = require 'path'
-cpp  = require 'child-process-promise'
+cps  = require 'child_process'
 
 class GitUpdater
     constructor : (@mew,@gitFolder)->
 
     update : (callback)->
-        executeCommand = "git --git-dir='#{@gitFolder}' pull origin master"
-        
-        promise = cpp.exec executeCommand
-
-        promise.then (result)->
-            callback(null)
-
-        promise.fail (err)->
-            callback(err)
-
+        cps.exec "git --git-dir='#{@gitFolder}' pull origin master",(err,stdout,stderr)->
+            if err
+                callback(err)
+            else
+                callback()
+                
     commit : ->
 
 
