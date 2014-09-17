@@ -26,12 +26,13 @@ Switches = [
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
     [ "-u", "--update", "update mewbot" ],
-    [ "-a", "--archive pack", "archive mewbot" ],
+    [ "-a", "--adapter adapter", "set adapter of this mewbot" ],
+    [ "-A", "--archive pack", "archive mewbot" ],
     [ "-m", "--module module", "check or get module from remote server" ]
 ]
 
 Options = 
-    adapter    :     process.env.MEWBOT_ADAPTER or "shell"
+    adapter    :     []
     test       :     process.env.MEWBOT_TEST    or ""
     role       :     process.env.MEWBOT_ROLE    or "client"
     version    :     false
@@ -63,6 +64,10 @@ Parser.on "help",(opt,value)->
 Parser.on "module",(opt,value)->
     Options.module = value
 
+Parser.on "adapter",(opt,value)->
+    if value and value.length
+        Options.adapter.push value
+
 Parser.on "archive",(opt,value)->
     if value
         Options.archive = value
@@ -81,6 +86,13 @@ unless process.platform is "win32"
 if Options.help
     console.log Parser.toString()
     process.exit 0
+
+if Options.adapter.length is 0
+    if process.env.MEWBOT_ADAPTER
+        for adapter in process.env.MEWBOT_ADAPTER.split(",")
+            Options.adapter.push adapter
+    else
+        Options.adapter.push "shell"
 
 mewbot = new MewBot Options.name,Options.adapter
 
@@ -139,4 +151,5 @@ mewbot.init Options.profile,(err)->
                     process.exit 0
         stdin = process.openStdin()
     else
-        console.log "mewbot start running"
+        mewbot.logger.info "mewbot start running"
+        mewbot.brain.run()

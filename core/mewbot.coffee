@@ -1,21 +1,21 @@
-Brain         = require './brain.coffee'
-ModuleManager = require './mm.coffee'
-TestManager   = require './test.coffee'
-Path          = require 'path'
-Fs            = require 'fs'
-Log           = require 'log'
-Os            = require 'os'
-Fse           = require 'fs.extra'
-UpdateManager = require './update.coffee'
+Brain          = require './brain.coffee'
+ModuleManager  = require './mm.coffee'
+TestManager    = require './test.coffee'
+UpdateManager  = require './update.coffee'
+Path           = require 'path'
+Fs             = require 'fs'
+Log            = require 'log'
+Os             = require 'os'
+Fse            = require 'fs.extra'
 
 class MewBot
-    constructor : (@name,@adapter)->
+    constructor : (@name,adapters)->
         @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @brain   = new Brain @
+        @brain   = new Brain @,adapters
         @mm      = new ModuleManager @
         @test    = new TestManager @
         @updater = new UpdateManager @
-        
+
     init : (profile,callback)->
         @changeProfile profile,(err)=>
             if err
@@ -24,7 +24,10 @@ class MewBot
             Fs.exists tmpFolder,(exists)=>
                 if exists is false
                     Fse.mkdirRecursiveSync tmpFolder
-                callback()
+                @brain.adapterManager.initAdapters (err)=>
+                    if err
+                        @logger.error err
+                    callback()
 
     getDataFile : (externalPath) ->
         if externalPath
@@ -49,8 +52,12 @@ class MewBot
             return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}",path)
         else
            return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}")
-
-
+           
+    getConfFile : (externalPath)->
+        if externalPath
+            return Path.join(__dirname,"..","var","conf",externalPath)
+        else
+            return Path.join(__dirname,"..","var","conf")
 
     changeProfile : (profileName,callback)->
         profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")
