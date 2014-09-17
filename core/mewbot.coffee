@@ -6,13 +6,15 @@ Fs            = require 'fs'
 Log           = require 'log'
 Os            = require 'os'
 Fse           = require 'fs.extra'
+UpdateManager = require './update.coffee'
 
 class MewBot
     constructor : (@name,@adapter)->
-        @logger = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @brain  = new Brain @
-        @mm     = new ModuleManager @
-        @test   = new TestManager @
+        @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
+        @brain   = new Brain @
+        @mm      = new ModuleManager @
+        @test    = new TestManager @
+        @updater = new UpdateManager @
         
     init : (profile,callback)->
         @changeProfile profile,(err)=>
@@ -47,6 +49,8 @@ class MewBot
             return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}",path)
         else
            return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}")
+
+
 
     changeProfile : (profileName,callback)->
         profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")

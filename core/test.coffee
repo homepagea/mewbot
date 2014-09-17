@@ -79,7 +79,6 @@ class TestManager
                 console.log "detail  :"
                 console.log JSON.stringify(testExecResult,null,4)
                 callback(testExecResult)
-        stdin = process.openStdin()
         runTestCallback()
 
 module.exports = TestManager    
