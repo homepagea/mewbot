@@ -107,6 +107,7 @@ mewbot.init Options.profile,(err)->
                 mewbot.logger.info "mewbot update success"
             process.exit 0
         stdin = process.openStdin()
+        
     else if Options.archive.length
         archiver = mewbot.module("archiver")
         packFile = mewbot.getTmpFile Options.archive
@@ -116,6 +117,7 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
             mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
+
     else if Options.test and Options.test.length
         if Options.test is "all"
             Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->

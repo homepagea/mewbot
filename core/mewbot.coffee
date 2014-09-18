@@ -15,6 +15,9 @@ class MewBot
         @mm      = new ModuleManager @
         @test    = new TestManager @
         @updater = new UpdateManager @
+        process.on "uncaughtException",(err)=>
+            @logger.error "#{err.stack}"
+            @logger.error err
 
     init : (profile,callback)->
         @changeProfile profile,(err)=>

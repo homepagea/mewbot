@@ -100,13 +100,40 @@ class AdapterManager
                         if typeof @adapterPool[adapter][profile].run is 'function'
                             try
                                 @adapterPool[adapter][profile].run()
+                                @adapterPool[adapter][profile].on "error",(e)=>
+                                    @mew.logger.info "mew adapter <#{adapter}[#{profile}]> run error  : #{e}"
+                                    delete @adapterPool[adapter][profile]
                             catch e
                                 @mew.logger.info "mew adapter <#{adapter}[#{profile}]> run error  : #{e}"
-                                delete @adapterPool[adapter]
+                                delete @adapterPool[adapter][profile]
 
 class UserManager 
     constructor : (@mew)->
+        @data = {}
+    # Public: Get a User object given a unique identifier.
+    #
+    # Returns a User instance of the specified user.
+    userForId: (adapterId,id, options) ->
+        user = @data[adapterId].users[id]
+        unless user
+            user = new Mew.User id,options
+            @data[adapterId].users[id] = user
+        if options and options.room and (!user.room or user.room isnt options.room)
+            user = new Mew.User id,options
+            @data[adapterId].users[id] = user
+        return user
 
+    # Public: Get a User object given a name.
+    #
+    # Returns a User instance for the user with the specified name.
+    userForName: (adapterId,name) ->
+        result = null
+        lowerName = name.toLowerCase()
+        for k of (@data[adapterId].users or { })
+            userName = @data[adapterId].users[k]['name']
+        if userName? and userName.toLowerCase() is lowerName
+            result = @data[adapterId].users[k]
+        return result
 
 class Brain
     constructor : (@mew,adapters)->
@@ -114,6 +141,7 @@ class Brain
         @userManager    = new UserManager @mew
 
     receive : (envelop)->
+        console.log envelop
 
     run : ->
         @adapterManager.run()
