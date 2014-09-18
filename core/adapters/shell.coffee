@@ -11,11 +11,12 @@ class ShellAdapter extends Mew.Adapter
         @repl = Readline.createInterface stdin, stdout
         @repl.on 'line', (buffer) =>
         	try
-                @receive new Mew.Message.TextMessage "shell",buffer.toString()
+                if buffer and buffer.length
+                    @receive new Mew.Message.TextMessage "shell",buffer.toString()
         	catch e
         		@mew.logger.error e
         	@repl.prompt()
-
+            
         @repl.setPrompt "#{@mew.name}> "
         @repl.prompt()
 

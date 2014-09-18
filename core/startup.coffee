@@ -47,13 +47,16 @@ Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
 
 Parser.on "test",(opt,value)->
-    Options.test = value
+    if value and value.length
+        Options.test = value
 
 Parser.on "profile",(opt,value)->
-    Options.profile = value
+    if value and value.length
+        Options.profile = value
 
 Parser.on "role",(opt,value)->
-    Options.role = value
+    if value and value.length
+        Options.role = value
 
 Parser.on "update",(opt,value)->
     Options.update = true
@@ -62,7 +65,8 @@ Parser.on "help",(opt,value)->
     Options.help = true
 
 Parser.on "module",(opt,value)->
-    Options.module = value
+    if value and value.length
+        Options.module = value
 
 Parser.on "adapter",(opt,value)->
     if value and value.length
@@ -75,7 +79,8 @@ Parser.on "archive",(opt,value)->
         Options.archive = "mewbot-#{new Date().getTime()}"
 
 Parser.on "name",(opt,value)->
-    Options.name = value
+    if value and value.length
+        Options.name = value
 
 Parser.parse process.argv
 
@@ -94,7 +99,7 @@ if Options.adapter.length is 0
     else
         Options.adapter.push "shell"
 
-mewbot = new MewBot Options.name,Options.adapter
+mewbot = new MewBot Options
 
 mewbot.init Options.profile,(err)->
     if Options.update

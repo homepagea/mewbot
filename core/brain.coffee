@@ -11,6 +11,7 @@ checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
             if (adapterInstance instanceof Mew.Adapter.MultiAdapter) isnt true
                 return callback("Not a MultiAdapter","#{name}[#{profileName}]")
         brain.adapterPool[name][profileName]=adapterInstance
+        brain.adapterIndex[adapterInstance.uuid]=adapterInstance
         callback(null,"#{name}[#{profileName}]")
     else
         callback("Not a MewAdapter","#{name}[#{profileName}]")
@@ -18,6 +19,7 @@ checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
 class AdapterManager
     constructor : (@mew,@adapters)->
         @adapterPool = {}
+        @adapterIndex = {}
 
     addAdapter : (adapter,profileName,profile,callback) ->
         if @adapterPool[adapter]

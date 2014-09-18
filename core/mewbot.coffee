@@ -9,9 +9,11 @@ Os             = require 'os'
 Fse            = require 'fs.extra'
 
 class MewBot
-    constructor : (@name,adapters)->
+    constructor : (option)->
+        @name    = option.name
+        @role    = option.role
         @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @brain   = new Brain @,adapters
+        @brain   = new Brain @,option.adapter
         @mm      = new ModuleManager @
         @test    = new TestManager @
         @updater = new UpdateManager @
