@@ -2,6 +2,11 @@ Mew = require 'mew'
 extend  = require 'extend'
 Fs      = require 'fs'
 Path    = require 'path'
+Validator = require 'validator'
+wildcard = require 'wildcard'
+
+isRegex = (value)->
+    return Object.prototype.toString.call(value) is '[object RegExp]';
 
 checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
     if adapterInstance instanceof Mew.Adapter or adapterInstance instanceof Mew.Adapter.MultiAdapter
@@ -17,9 +22,40 @@ checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
         callback("Not a MewAdapter","#{name}[#{profileName}]")
 
 class AdapterManager
-    constructor : (@mew,@adapters)->
+    constructor : (@mew)->
+        @adapters = []
         @adapterPool = {}
         @adapterIndex = {}
+
+    findAdapters : (adapterRule) ->
+        if isRegex(adapterRule)
+            adapters = []
+            for adpaterUUID of @adapterPool
+                adapter = @adapterPool[adpaterUUID]
+                if adapterRule.test "#{adapter.name}[#{adapter.profileName}]"
+                   adapters.push adapter
+            return adapters
+        else if Validator.isUUID(adapterRule)
+            if @adapterIndex[adapterRule]
+                return [@adapterIndex[adapterRule]]
+            else
+                return null
+        else if typeof adapterRule is "string"
+            if @adapterPool[adapterRule]
+                adapters = []
+                for adpaterProfile of @adapterPool[adapterRule]
+                    adapters.push @adapterPool[adapterRule][adpaterProfile]
+                return adapters
+            else
+                adapters = []
+                for adpaterUUID of @adapterIndex
+                    adapter = @adapterIndex[adpaterUUID]
+                    if wildcard(adapterRule,"#{adapter.name}[#{adapter.profileName}]").length
+                        adapters.push adapter
+                return adapters
+        else
+            return []
+
 
     addAdapter : (adapter,profileName,profile,callback) ->
         if @adapterPool[adapter]
@@ -31,7 +67,7 @@ class AdapterManager
             if exists
                 adapterClass = require defaultAdapterPath
                 if typeof adapterClass is 'function'
-                    adapterInstance = new adapterClass @mew,profile
+                    adapterInstance = new adapterClass @mew,profileName,profile
                     checkAdapterInstance @,adapter,profileName,adapterInstance,callback
                 else
                     callback("adapter is not function","#{adapter}[#{profileName}]")
@@ -41,7 +77,7 @@ class AdapterManager
                     if exists
                         adapterClass = require adapterModuleFolder
                         if typeof adapterClass is 'function'
-                            adapterInstance = new adapterClass @mew,profile
+                            adapterInstance = new adapterClass @mew,profileName,profile
                             checkAdapterInstance @,adapter,profileName,adapterInstance,callback
                         else
                             callback("adapter is not function","#{adapter}[#{profileName}]")
@@ -67,7 +103,8 @@ class AdapterManager
             else
                 callback(null)
 
-    initAdapters : (callback)->
+    initAdapters : (the_adapters,callback)->
+        @adapters = the_adapters
         adapterInitCallback = (err,result)=>
             if result
                 if err
@@ -137,13 +174,103 @@ class UserManager
             result = @data[adapterId].users[k]
         return result
 
-class Brain
-    constructor : (@mew,adapters)->
-        @adapterManager = new AdapterManager @mew,adapters
-        @userManager    = new UserManager @mew
+class TextListener
+    constructor : (@rule,@adapterMatchRule,@callback)->
 
-    receive : (envelop)->
-        console.log envelop
+class Response
+    constructor : (@mew,@msgObject,@listener,@matchResult)->
+
+    replyText : (text ...)->
+        @mew.brain.adapterManager.adapterIndex[@msgObject.adapterId].sendText @msgObject.message.user,text
+
+    respondText : (text ...)->
+        adapters = @mew.brain.adapterManager.findAdapters @listener.adapterMatchRule
+        if adapters.length
+            for adapter in adapters
+                try
+                    adapter.sendText @msgObject.message.user,text
+                catch ex
+                    @mew.logger.error ex
+        else
+            @replyText text
+
+class RuleManager
+    constructor : (@mew)->
+        @buildResponderTestRegex()
+        @mewTextListenerPool = {}
+
+    buildResponderTestRegex : ->
+        @mewNameAtResponser = eval("/^@#{@mew.name} (.*)$/")
+        @mewNamePointResponser = eval("/^#{@mew.name}:(.*)$/")
+        testString = "/^("
+        charArray = []
+        for char in @mew.name
+            if char not in charArray
+                charArray.push char
+        for char in charArray
+            testString = "#{testString}#{char}|"
+        testString = "#{testString}\\*|\\?)+:(.*)$/"
+        @mewNameWCResponser = eval(testString)
+
+    addTextRespond : (rule,adpaterMatchRule,callback)->
+        ruleKey = rule.toString()
+        if @mewTextListenerPool[ruleKey]
+            delete @mewTextListenerPool[ruleKey]
+        @mewTextListenerPool[ruleKey]=new TextListener rule,adpaterMatchRule,callback
+
+    removeTextRespond : (rule)->
+        ruleKey = rule.toString()
+        if @mewTextListenerPool[ruleKey]
+            delete @mewTextListenerPool[ruleKey]
+
+    getTextMatchPart : (text)->
+        if text 
+            atRespondMatch = text.match(@mewNameAtResponser)
+            if atRespondMatch
+                return atRespondMatch[1].replace(/(^\s*)|(\s*$)/g,"")
+            else
+                nameRespondMatch = text.match @mewNamePointResponser
+                if nameRespondMatch
+                    return nameRespondMatch[1].replace(/(^\s*)|(\s*$)/g,"")
+                else
+                    matches  = text.match @mewNameWCResponser 
+                    if matches
+                        if wildcard(matches[1],@mew.name).length
+                            return matches[2].replace(/(^\s*)|(\s*$)/g,"")
+                        else
+                            return null
+                    else
+                        return null
+        else
+            return null
+
+class Brain
+    constructor : (@mew)->
+        @adapterManager = new AdapterManager @mew
+        @userManager    = new UserManager @mew
+        @ruleManager    = new RuleManager @mew
+
+    addTextRespond : (rule,adpaterMatchRule,callback)->
+        if callback and rule and isRegex(rule) and (typeof callback is 'function')
+            @ruleManager.addTextRespond rule,adpaterMatchRule,callback
+
+    sendText : (adapterMatchRule,envelop,messages ...)->
+        for adapter in @adapterManager.findAdapters adapterMatchRule
+            adapter.sendText envelop,messages
+
+    receive : (msgObject)->
+        if msgObject.message instanceof Mew.Message.TextMessage
+            matchPart = @ruleManager.getTextMatchPart msgObject.message.text
+            if matchPart
+                for ruleKey of @ruleManager.mewTextListenerPool
+                    listener = @ruleManager.mewTextListenerPool[ruleKey]
+                    matchResult = matchPart.match listener.rule
+                    if matchResult
+                        response = new Response @mew,msgObject,listener,matchResult
+                        try
+                            listener.callback(response)
+                        catch ex
+                            @mew.logger.error ex
 
     run : ->
         @adapterManager.run()

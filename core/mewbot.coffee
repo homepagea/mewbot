@@ -9,11 +9,11 @@ Os             = require 'os'
 Fse            = require 'fs.extra'
 
 class MewBot
-    constructor : (option)->
-        @name    = option.name
-        @role    = option.role
+    constructor : (@options)->
+        @name    = @options.name
+        @role    = @options.role
         @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @brain   = new Brain @,option.adapter
+        @brain   = new Brain @
         @mm      = new ModuleManager @
         @test    = new TestManager @
         @updater = new UpdateManager @
@@ -29,9 +29,17 @@ class MewBot
             Fs.exists tmpFolder,(exists)=>
                 if exists is false
                     Fse.mkdirRecursiveSync tmpFolder
-                @brain.adapterManager.initAdapters (err)=>
+                if @options.adapter.length is 0
+                    if process.env.MEWBOT_ADAPTER
+                        for adapter in process.env.MEWBOT_ADAPTER.split(",")
+                            @options.adapter.push adapter
+                    else
+                        @options.adapter.push "shell"
+                @brain.adapterManager.initAdapters @options.adapter,(err)=>
                     if err
                         @logger.error err
+                    @addTextRespond /^ping$/i,(response)=>
+                        response.replyText "PONG"
                     callback()
 
     getDataFile : (externalPath) ->
@@ -87,7 +95,22 @@ class MewBot
             else
                 if callback
                     callback("config profile [#{profileName}] is not found")
+    
+    removeTextRespond : (rule)->
+        @brain.ruleManager.removeTextRespond rule
 
+    addTextRespond : (rule,callback)->
+        @brain.addTextRespond rule,"",callback
+
+    addTextRespondAll : (rule,callback)->
+        @brain.addTextRespond rule,"*",callback
+
+    addTextRespondTo : (rule,match,callback)->
+        @brain.addTextRespond rule,match,callback
+
+    send : (envelop,messages ...)->
+        @brain.sendText envelop.adapterId,envelop,messages
+        
     module : (module) ->
         return @mm.module(module)
 
