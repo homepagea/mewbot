@@ -178,8 +178,8 @@ class TextListener
     constructor : (@rule,@adapterMatchRule,@callback)->
 
 class Response
-    constructor : (@mew,@msgObject,@listener,@matchResult)->
-
+    constructor : (@mew,@msgObject,@listener,@match)->
+        
     replyText : (text ...)->
         @mew.brain.adapterManager.adapterIndex[@msgObject.adapterId].sendText @msgObject.message.user,text
 
@@ -193,6 +193,7 @@ class Response
                     @mew.logger.error ex
         else
             @replyText text
+
 
 class RuleManager
     constructor : (@mew)->
@@ -260,18 +261,20 @@ class Brain
 
     receive : (msgObject)->
         if msgObject.message instanceof Mew.Message.TextMessage
+            @mew.logger.debug "Received Text Message #{JSON.stringify(msgObject)} "
             matchPart = @ruleManager.getTextMatchPart msgObject.message.text
             if matchPart
                 for ruleKey of @ruleManager.mewTextListenerPool
                     listener = @ruleManager.mewTextListenerPool[ruleKey]
                     matchResult = matchPart.match listener.rule
                     if matchResult
-                        response = new Response @mew,msgObject,listener,matchResult
-                        try
-                            listener.callback(response)
-                        catch ex
-                            @mew.logger.error ex
-
+                        if msgObject.message.done is false
+                            response = new Response @mew,msgObject,listener,matchResult
+                            try
+                                listener.callback(response)
+                            catch ex
+                                @mew.logger.error ex
+                                
     run : ->
         @adapterManager.run()
 

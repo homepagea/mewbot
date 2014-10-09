@@ -7,7 +7,11 @@ Fs             = require 'fs'
 Log            = require 'log'
 Os             = require 'os'
 Fse            = require 'fs.extra'
-
+rebotRules     = [
+    "1. A robot may not injure a human being or, through inaction, allow a human being to come to harm.",
+    "2. A robot must obey any orders given to it by human beings, except where such orders would conflict with the First Law.",
+    "3. A robot must protect its own existence as long as such protection does not conflict with the First or Second Law."
+]
 class MewBot
     constructor : (@options)->
         @name    = @options.name
@@ -40,6 +44,17 @@ class MewBot
                         @logger.error err
                     @addTextRespond /^ping$/i,(response)=>
                         response.replyText "PONG"
+
+                    @addTextRespondAll /^ECHO (.*)$/i,(response)=>
+                        if response.match[1] and response.match[1].length
+                            response.respondText response.match[1]
+
+                    @addTextRespond /^TIME$/i,(response)=>
+                        response.replyText "Server time is: #{new Date()}"
+
+                    @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,(response)=>
+                        response.replyText rebotRules
+
                     callback()
 
     getDataFile : (externalPath) ->
