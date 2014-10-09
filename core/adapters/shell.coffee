@@ -19,7 +19,7 @@ class ShellAdapter extends Mew.Adapter
         @repl.on 'line', (buffer) =>
             try
                 if buffer and buffer.length
-                    @receive new Mew.Message.TextMessage "shell",buffer.toString()
+                    @receive new Mew.Message.TextMessage @userForName("shell"),buffer.toString()
             catch e
                 @mew.logger.error e
             @repl.prompt()

@@ -54,7 +54,7 @@ class MewBot
 
                     @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,(response)=>
                         response.replyText rebotRules
-
+                    
                     callback()
 
     getDataFile : (externalPath) ->
@@ -123,11 +123,17 @@ class MewBot
     addTextRespondTo : (rule,match,callback)->
         @brain.addTextRespond rule,match,callback
 
-    send : (envelop,messages ...)->
-        @brain.sendText envelop.adapterId,envelop,messages
+    sendText : (adapterId,messages ...)->
+        @brain.sendText adapterId,messages
         
     module : (module) ->
         return @mm.module(module)
+
+    addRpcRespond : (domain,object)->
+        @brain.rpcManager.addRpcRespond domain,object
+
+    removeRpcRespond : (domain)->
+        @brain.rpcManager.removeRpcRespond
 
 
 

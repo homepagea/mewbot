@@ -56,7 +56,8 @@ Parser.on "profile",(opt,value)->
 
 Parser.on "role",(opt,value)->
     if value and value.length
-        Options.role = value
+        if value is "server" or value is "client"
+            Options.role = value
 
 Parser.on "update",(opt,value)->
     Options.update = true
