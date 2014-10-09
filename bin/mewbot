@@ -1,25 +1,70 @@
 #!/bin/bash
 PRG="$0"
-PRGDIR=`dirname "$PRG"`
+PRGDIR=`pwd`/`dirname "$PRG"`
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
+SCRIPT="$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee"
+SELF=`readlink -e $PRGDIR/mewbot`
 
 mkdir -p $PRGDIR/../var/log
 mkdir -p $PRGDIR/../var/conf
 mkdir -p $PRGDIR/../var/run
 
+
+pidfile=$PRGDIR/../var/run/mewbot.pid
+logfile=$PRGDIR/../var/log/mewbot.log
+forever_dir=$PRGDIR/../var
+monitor=`readlink -e $PRGDIR/../node_modules/forever/bin/monitor`
+forever=`readlink -e $PRGDIR/../node_modules/forever/bin/forever`
+
+findForeverPID() {
+	echo `ps -ef --width 2000|grep $monitor|sed '/grep/d'|awk '{print $2}'`
+}
+
+findScriptPID() {
+	echo `ps -ef --width 2000|grep $PRGDIR/../node_modules/coffee-script/bin/coffee|sed '/grep/d'|awk '{print $2}'`
+}
+
 case $1 in
-    "start" | "stop" | "restart")
-        $PRGDIR/../node_modules/forever/bin/forever $1 \
-           -p /var/run/forever \
-           --pidfile $PRGDIR/var/run/otherbot_$HUBOT_NAME.pid \
-           -l $PRGDIR/var/log/otherbot_$HUBOT_NAME.log -a \
-           -c $PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee
-    ;;
-    "run" )
-        $PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee 
-    ;;
-    "test" )
-        $PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee --test all
-    ;;
+    "start")
+	    PID=$(findForeverPID)
+	    if [ -n "$PID" ]; then
+	        echo "mewbot already started"                                                
+	    	exit 1                                 
+	    else
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    fi
+	    ;;
+	"stop")
+	    pidForever=$(findForeverPID)
+	    if [ -n "$pidForever" ]; then                                                
+	    	pidScript=$(findScriptPID)
+	    	kill $pidForever
+	    	kill $pidScript
+	    else
+	    	echo "mewbot already stopped"                                                
+	    	exit 1
+	    fi
+	    ;;
+	"restart")
+	    pidForever=$(findForeverPID)
+	    if [ -n "$pidForever" ]; then                                                
+	    	pidScript=$(findScriptPID)
+	    	kill $pidForever
+	    	kill $pidScript
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    else
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    fi	    
+	    ;;
+    "run")
+        $SCRIPT
+        ;;
+    "debug")
+        export MEWBOT_LOG_LEVEL=debug
+        $SCRIPT
+        ;;
+    "test")
+        $SCRIPT --test all
+        ;;
     * ) echo "usage: mewbot run|start|stop|retart" ;;
 esac
