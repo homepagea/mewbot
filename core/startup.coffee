@@ -26,7 +26,9 @@ Switches = [
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
     [ "-u", "--update", "update mewbot" ],
+    [ "-D", "--debug", "debug mewbot" ],
     [ "-a", "--adapter adapter", "set adapter of this mewbot" ],
+    [ "-s", "--service service", "add service on startup" ],
     [ "-A", "--archive pack", "archive mewbot" ],
     [ "-m", "--module module", "check or get module from remote server" ]
 ]
@@ -41,6 +43,7 @@ Options =
     module     :     ""
     archive    :     ""
     name       :     process.env.MEWBOT_NAME    or "mewbot"
+    services   :     []
     profile    :     process.env.MEWBOT_PROFILE or "default"
 
 Parser = new OptParse.OptionParser(Switches)
@@ -69,9 +72,16 @@ Parser.on "module",(opt,value)->
     if value and value.length
         Options.module = value
 
+Parser.on "debug",(opt,value)->
+    process.env.MEWBOT_LOG_LEVEL="debug"
+
 Parser.on "adapter",(opt,value)->
     if value and value.length
         Options.adapter.push value
+
+Parser.on "service",(opt,value)->
+    if value and value.length
+        Options.services.push value
 
 Parser.on "archive",(opt,value)->
     if value

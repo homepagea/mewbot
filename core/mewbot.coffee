@@ -7,11 +7,8 @@ Fs             = require 'fs'
 Log            = require 'log'
 Os             = require 'os'
 Fse            = require 'fs.extra'
-rebotRules     = [
-    "1. A robot may not injure a human being or, through inaction, allow a human being to come to harm.",
-    "2. A robot must obey any orders given to it by human beings, except where such orders would conflict with the First Law.",
-    "3. A robot must protect its own existence as long as such protection does not conflict with the First or Second Law."
-]
+Portfinder     = require 'portfinder'
+
 class MewBot
     constructor : (@options)->
         @name    = @options.name
@@ -29,33 +26,36 @@ class MewBot
         @changeProfile profile,(err)=>
             if err
                 @logger.error err
-            tmpFolder = @getTmpFile()
-            Fs.exists tmpFolder,(exists)=>
-                if exists is false
-                    Fse.mkdirRecursiveSync tmpFolder
-                if @options.adapter.length is 0
-                    if process.env.MEWBOT_ADAPTER
-                        for adapter in process.env.MEWBOT_ADAPTER.split(",")
-                            @options.adapter.push adapter
+            Portfinder.getPort (err,port)=>
+                if err
+                    @logger.error err
+                    @port=process.env.MEWBOT_PORT || 3030
+                else
+                    if process.env.MEWBOT_PORT
+                        @port=process.env.MEWBOT_PORT
                     else
-                        @options.adapter.push "shell"
-                @brain.adapterManager.initAdapters @options.adapter,(err)=>
-                    if err
-                        @logger.error err
-                    @addTextRespond /^ping$/i,(response)=>
-                        response.replyText "PONG"
+                        @port=port
+                tmpFolder = @getTmpFile()
+                Fs.exists tmpFolder,(exists)=>
+                    if exists is false
+                        Fse.mkdirRecursiveSync tmpFolder
+                    if @options.adapter.length is 0
+                        if process.env.MEWBOT_ADAPTER
+                            for adapter in process.env.MEWBOT_ADAPTER.split(",")
+                                @options.adapter.push adapter
+                        else
+                            @options.adapter.push "shell"
+    
+                    if process.env.MEWBOT_SERVICE
+                        for service in process.env.MEWBOT_SERVICE.split(",")
+                            @options.services.push service
+    
+                    @brain.adapterManager.initAdapters @options.adapter,(err)=>
+                        if err
+                            @logger.error err
 
-                    @addTextRespondAll /^ECHO (.*)$/i,(response)=>
-                        if response.match[1] and response.match[1].length
-                            response.respondText response.match[1]
-
-                    @addTextRespond /^TIME$/i,(response)=>
-                        response.replyText "Server time is: #{new Date()}"
-
-                    @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,(response)=>
-                        response.replyText rebotRules
-                    
-                    callback()
+                        @exportProfile "backup",(err)=>
+                            callback()
 
     getDataFile : (externalPath) ->
         if externalPath
@@ -77,15 +77,26 @@ class MewBot
 
     getTmpFile : (path)->
         if path
-            return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}",path)
+            return Path.join(Os.tmpdir(),"#{@name}-#{@port}",path)
         else
-           return Path.join(Os.tmpdir(),"#{@name}-#{process.env.MEWBOT_PORT || 3030}")
+           return Path.join(Os.tmpdir(),"#{@name}-#{@port}")
            
     getConfFile : (externalPath)->
         if externalPath
             return Path.join(__dirname,"..","var","conf",externalPath)
         else
             return Path.join(__dirname,"..","var","conf")
+
+    exportProfile : (profileName,callback)->
+        profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")
+        profileOutput = ""
+        for key of process.env
+            if profileOutput.length
+                profileOutput="#{profileOutput}\n"
+            profileOutput="#{profileOutput}#{key}=#{process.env[key]}"
+        Fs.writeFile profileFile,profileOutput,(err)=>
+            if callback
+                callback(err,profileFile)
 
     changeProfile : (profileName,callback)->
         profileFile = Path.join(__dirname,"/../var/conf/#{profileName}")
@@ -100,7 +111,9 @@ class MewBot
                         if fileContent and fileContent.length
                             for confLine in fileContent.split("\n")
                                 if confLine.indexOf("=")  > 0
-                                    conEntrys = confLine.split("=")
+                                    conEntrys = []
+                                    conEntrys.push confLine.substr(0,confLine.indexOf("="))
+                                    conEntrys.push confLine.substr(confLine.indexOf("=")+1)
                                     process.env[conEntrys[0].replace(/(^\s*)|(\s*$)/g,"")]=conEntrys[1].replace(/(^\s*)|(\s*$)/g,"")
                             if callback
                                 callback()
@@ -129,8 +142,8 @@ class MewBot
     module : (module) ->
         return @mm.module(module)
 
-    addRpcRespond : (domain,object)->
-        @brain.rpcManager.addRpcRespond domain,object
+    addRpcRespond : (domain,object,ignored_functions)->
+        @brain.rpcManager.addRpcRespond domain,object,ignored_functions
 
     removeRpcRespond : (domain)->
         @brain.rpcManager.removeRpcRespond

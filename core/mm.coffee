@@ -16,6 +16,8 @@ class ModuleManager
         @initCoreModules()
         
     module: (moduleName) ->
+        if moduleName.indexOf("@") is 0 or moduleName.indexOf("!") is 0
+            throw new Error("adpater or service can not be referenced as module")
         if @moduleInitComplete
             if typeof @actionModuleContainer[moduleName] is 'undefined'
                 @initMewModule moduleName
