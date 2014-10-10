@@ -57,8 +57,8 @@ class Brain
                                 @mew.logger.error ex
                                 
     run : ->
-        @adapterManager.run()
         @serviceManager.run()
+        @adapterManager.run()
         
         @addTextRespond /^ping$/i,"",(response)=>
             response.replyText "PONG"
