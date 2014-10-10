@@ -70,9 +70,14 @@ class Brain
         @addTextRespond /^TIME$/i,"",(response)=>
             response.replyText "Server time is: #{new Moment().format()}"
 
+        @addTextRespond /^MEWBOT DIE$/i,"",(response)=>
+            response.replyText "Goodbye, curel world"
+            setTimeout ->
+                process.exit 0
+            ,1000
+
         @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,"",(response)=>
             response.replyText rebotRules
-        
 
 
 
