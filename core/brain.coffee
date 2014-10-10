@@ -41,7 +41,7 @@ class Brain
 
     receive : (msgObject)->
         if msgObject.message instanceof Mew.Message.TextMessage
-            @mew.logger.debug "Received Text Message #{JSON.stringify(msgObject)} "
+            #@mew.logger.debug "Received Text Message #{JSON.stringify(msgObject)} "
             matchPart = @ruleManager.getTextMatchPart msgObject.message.text
             if matchPart
                 for ruleKey of @ruleManager.mewTextListenerPool
