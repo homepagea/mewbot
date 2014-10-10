@@ -15,19 +15,29 @@ class ServiceWrapper
             if exists
                 try
                     serviceClass = require servicePath
-                    @instance = new serviceClass @mew
-                    if @instance instanceof Mew.Service
-                        @instance.start (err)=>
-                            if err
-                                callback(err)
-                            else
-                                @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions,(err)=>
-                                    if err
-                                        callback(err)
-                                    else
-                                        callback()
-                    else
-                        callback("service module isnt a mew service")
+                    serviceConfigPath = Path.join __dirname,"..","var","conf","!#{@name}"
+                    Fs.readFile serviceConfigPath,(err,data)=>
+                        serviceConfig = {}
+                        if err
+                            @mew.logger.debug "reading service [#{@name}] config error : #{err}"
+                        else
+                            try
+                                serviceConfig = Extend(serviceConfig,JSON.parse(data.toString()))
+                            catch e
+                                @mew.logger.debug "reading service [#{@name}] config error : #{e}"
+                        @instance = new serviceClass @mew,serviceConfig
+                        if @instance instanceof Mew.Service
+                            @instance.start (err)=>
+                                if err
+                                    callback(err)
+                                else
+                                    @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions,(err)=>
+                                        if err
+                                            callback(err)
+                                        else
+                                            callback()
+                        else
+                            callback("service module isnt a mew service")
                 catch ex
                     callback(ex)
             else
@@ -38,6 +48,17 @@ class ServiceManager
     constructor: (@mew,@brain)->
         @serviceIndex={}
 
+    persistConfig : (service,callback)->
+        if @serviceIndex[service]
+            try
+                serviceConfigPath = Path.join __dirname,"..","var","conf","!#{service}"
+                Fs.writeFile serviceConfigPath,JSON.stringify(@serviceIndex[service].instance.config,null,4),callback
+            catch ex
+                if callback
+                    callback(ex)
+        else
+            if callback
+                callback("service not found")
     run: ->
         serviceWrapperArray=[]
         for service in @mew.options.services

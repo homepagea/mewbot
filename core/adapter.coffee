@@ -93,7 +93,9 @@ class AdapterManager
                         externOptions = {}
                         for confLine in fileContent.split("\n")
                             if confLine.indexOf("=")  > 0
-                                conEntrys = confLine.split("=")
+                                conEntrys = []
+                                conEntrys.push confLine.substr(0,confLine.indexOf("="))
+                                conEntrys.push confLine.substr(confLine.indexOf("=")+1)
                                 externOptions[conEntrys[0].replace(/(^\s*)|(\s*$)/g,"")]=conEntrys[1].replace(/(^\s*)|(\s*$)/g,"")
                         callback(externOptions)
                     else
@@ -108,7 +110,7 @@ class AdapterManager
                 if err
                     @mew.logger.error "mew adapter <#{result}> init failed : #{err.toString()}"
                 else
-                    @mew.logger.info "mew adapter <#{result}> init complete"
+                    @mew.logger.debug "mew adapter <#{result}> init complete"
             adapter = @adapters.shift()
             if adapter
                 profileName = "default"
@@ -119,9 +121,10 @@ class AdapterManager
                     profileName = adapterMatch[2]
                     @readAdapterConf profileName,(option)=>
                         if option
-                            console.log option
                             @addAdapter adapter,profileName,option,adapterInitCallback
                         else
+                            if profileName isnt "default"
+                                @mew.logger.debug "profile [#{profileName}] for adapter [#{adapter}] not found, using default profile ..."
                             @addAdapter adapter,"default",option,adapterInitCallback
                 else
                     @addAdapter adapter,profileName,null,adapterInitCallback
@@ -141,7 +144,7 @@ class AdapterManager
                                     @mew.logger.info "mew adapter <#{adapter}[#{profile}]> run error  : #{e}"
                                     delete @adapterPool[adapter][profile]
                             catch e
-                                @mew.logger.info "mew adapter <#{adapter}[#{profile}]> run error  : #{e}"
+                                @mew.logger.error "mew adapter <#{adapter}[#{profile}]> run error  : #{e}"
                                 delete @adapterPool[adapter][profile]
 
 module.exports=AdapterManager                                

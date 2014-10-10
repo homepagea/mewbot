@@ -54,7 +54,7 @@ Parser.on "test",(opt,value)->
         Options.test = value
 
 Parser.on "profile",(opt,value)->
-    if value and value.length
+    if value and value.length and /^[a-zA-Z0-9]+$/.test(value)
         Options.profile = value
 
 Parser.on "role",(opt,value)->

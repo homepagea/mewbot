@@ -38,7 +38,7 @@ class ModuleManager
                     aimodule = new aimoduleClass @mewbot
                     aimoduleName = aifile.substr(0,aifile.indexOf(".coffee"))
                     @actionModuleContainer[aimoduleName]=aimodule
-                    @mewbot.logger.info "loading core module [#{aimoduleName}] success"
+                    @mewbot.logger.debug "loading core module [#{aimoduleName}] success"
                 catch error
                     @mewbot.logger.error error
                     @mewbot.logger.error "Unable to load core module : #{aimoduleName} : #{error.stack} "
@@ -46,7 +46,7 @@ class ModuleManager
                 @initModuleInstance(moduleInstance)
             @moduleInitComplete = true
         else
-            @mewbot.logger.info "ai_modules folder not found "
+            @mewbot.logger.error "ai_modules folder not found "
 
     initMewModule : (moduleName)->
         moduleFolder = Path.join __dirname,"..","mew_modules",moduleName
@@ -55,7 +55,7 @@ class ModuleManager
                 if typeof @actionModuleContainer[moduleName] is 'undefined'
                     aimoduleClass=require moduleFolder
                     @actionModuleContainer[moduleName] = new aimoduleClass @mewbot
-                    @mewbot.logger.info "loading mew module [#{moduleName}] success"
+                    @mewbot.logger.debug "loading mew module [#{moduleName}] success"
                 return @actionModuleContainer[moduleName]
             catch error
                 @mewbot.logger.error error

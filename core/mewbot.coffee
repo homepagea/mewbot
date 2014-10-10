@@ -121,8 +121,12 @@ class MewBot
                             if callback
                                 callback("config profile [#{profileName}] is empty")
             else
-                if callback
-                    callback("config profile [#{profileName}] is not found")
+                if profileName is "default"
+                    if callback
+                        callback("config profile [#{profileName}] is not found")
+                else
+                    @logger.debug "config profile [#{profileName}] is not found, using default profile ..."
+                    @changeProfile "default",callback
     
     removeTextRespond : (rule)->
         @brain.ruleManager.removeTextRespond rule

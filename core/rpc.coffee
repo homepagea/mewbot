@@ -106,6 +106,8 @@ class RPCManager
         @addRpcRespond "rpc",@
         @rpcInfoPool = {}
 
+    makeRpcRequest : (adapterMatchRole,role,timeout,domain,method,params,callback)->
+        
     removeRpcRespond : (domain)->
         rpcmapRequestRegex = eval("/#{domain}:request:(.*)$/")
         @brain.ruleManager.removeTextRespond rpcmapRequestRegex
