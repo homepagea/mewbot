@@ -36,8 +36,9 @@ class MewBot
                     else
                         @port=port
                         
-                if process.env.MEWBOT_NAME
-                    @name = process.env.MEWBOT_NAME
+                if @name is "mewbot"    
+                    if process.env.MEWBOT_NAME
+                        @name = process.env.MEWBOT_NAME
 
                 tmpFolder = @getTmpFile()
                 Fs.exists tmpFolder,(exists)=>
