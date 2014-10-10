@@ -61,7 +61,7 @@ class Brain
         @serviceManager.run()
         
         @addTextRespond /^ping$/i,"",(response)=>
-            response.replyTex
+            response.replyText "PONG"
 
         @addTextRespond /^ECHO (.*)$/i,"*",(response)=>
             if response.match[1] and response.match[1].length
