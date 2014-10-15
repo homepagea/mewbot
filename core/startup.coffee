@@ -26,7 +26,7 @@ Switches = [
     [ "-r" , "--role client|server", "role of this mewbot" ],
     [ "-h" , "--help", "print help information" ],
     [ "-p" , "--profile profile", "config profile of this mewbot" ],
-    [ "-u" , "--update", "update mewbot" ],
+    [ "--update", "update mewbot" ],
     [ "-B" , "--build", "build mewbot" ],
     [ "-D" , "--debug", "debug mewbot" ],
     [ "-a" , "--adapter adapter", "set adapter of this mewbot" ],
