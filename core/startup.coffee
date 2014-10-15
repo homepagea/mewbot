@@ -11,6 +11,9 @@ checkDirectory = (path)->
     if Fs.existsSync(dataFile) is false
         Fse.mkdirRecursiveSync dataFile
 
+getMewbotName = ->
+    return mewbot.name
+
 checkDirectory "/script"
 checkDirectory "/testrc"
 checkDirectory "/var"
@@ -33,6 +36,7 @@ Switches = [
     [ "-s" , "--service service", "add service on startup" ],
     [ "-A" , "--archive pack", "archive mewbot" ],
     [ "--archive-module pack", "archive mewbot module" ],
+    [ "--archive-data pack", "archive mewbot data" ],
     [ "-m" , "--module module", "check or get module from remote server" ]
 ]
 
@@ -46,7 +50,8 @@ Options =
     module            :     ""
     archive           :     ""
     archiveModule     :     ""
-    name              :     process.env.MEWBOT_NAME    or "mewbot"
+    archiveData       :     ""
+    name              :     process.env.MEWBOT_NAME    or Path.basename(Path.join(__dirname,".."))
     services          :     []
     profile           :     process.env.MEWBOT_PROFILE or "default"
     build             :     false
@@ -102,6 +107,12 @@ Parser.on "archive-module",(opt,value)->
         Options.archiveModule = value
     else
         Options.archiveModule = "mewbot-module-#{new Moment().format()}"
+
+Parser.on "archive-data",(opt,value)->
+    if value
+        Options.archiveData = value
+    else
+        Options.archiveData = "mewbot-data-#{new Moment().format()}"
 
 Parser.on "name",(opt,value)->
     if value and value.length
@@ -185,6 +196,18 @@ mewbot.init Options.profile,(err)->
         mewbot.logger.info "mewbot start archive module at #{packFile}"
         archiver.zipFolder packFile,Path.join(__dirname,"..","mew_modules"),(err,pointer)->
             mewbot.logger.info "mewbot archive module complete at #{packFile}"
+            process.exit 0
+    else if Options.archiveData.length
+        ###
+        handle archive-module argument
+        ###
+        archiver = mewbot.module("archiver")
+        packFile = mewbot.getTmpFile Options.archiveData
+        if Options.archiveData.indexOf(".zip") < 0
+            packFile = "#{packFile}.zip"
+        mewbot.logger.info "mewbot start archive data at #{packFile}"
+        archiver.zipFolder packFile,Path.join(__dirname,"..","var"),(err,pointer)->
+            mewbot.logger.info "mewbot archive data complete at #{packFile}"
             process.exit 0
     else if Options.test and Options.test.length
         ###
