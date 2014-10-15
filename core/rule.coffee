@@ -54,11 +54,9 @@ class RuleManager
                     charArray.push "\\|"
                 else 
                     charArray.push "#{char}"
-        console.log charArray
         for char in charArray
             testString = "#{testString}#{char}|"
         testString = "#{testString}\\*|\\?)+:(.*)$/"
-        console.log testString
         @mewNameWCResponser = eval(testString)
 
     addTextRespond : (rule,adpaterMatchRule,callback)->

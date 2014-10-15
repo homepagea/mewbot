@@ -1,6 +1,6 @@
 #!/bin/bash
 PRG="$0"
-PRGDIR=`pwd`/`dirname "$PRG"`
+PRGDIR=`dirname "$PRG"`
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
 SCRIPT="$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee"
 SELF=`readlink -e $PRGDIR/mewbot`
@@ -10,8 +10,8 @@ mkdir -p $PRGDIR/../var/conf
 mkdir -p $PRGDIR/../var/run
 
 
-pidfile=$PRGDIR/../var/run/mewbot.pid
-logfile=$PRGDIR/../var/log/mewbot.log
+pidfile=`readlink -e $PRGDIR/../var/run/mewbot.pid`
+logfile=`readlink -e $PRGDIR/../var/log/mewbot.log`
 forever_dir=$PRGDIR/../var
 monitor=`readlink -e $PRGDIR/../node_modules/forever/bin/monitor`
 forever=`readlink -e $PRGDIR/../node_modules/forever/bin/forever`

@@ -53,13 +53,9 @@ class MewBot
                     if process.env.MEWBOT_SERVICE
                         for service in process.env.MEWBOT_SERVICE.split(",")
                             @options.services.push service
-    
-                    @brain.adapterManager.initAdapters @options.adapter,(err)=>
-                        if err
-                            @logger.error err
-
-                        @exportProfile "backup",(err)=>
+                    @exportProfile "backup",(err)=>
                             callback()
+
 
     getDataFile : (externalPath) ->
         if externalPath

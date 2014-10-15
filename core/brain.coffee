@@ -57,11 +57,13 @@ class Brain
                                 @mew.logger.error ex
                                 
     run : ->
+        @adapterManager.initAdapters @mew.options.adapter,(err)=>
+            if err
+                @mew.logger.error err
+            @adapterManager.run()
         @ruleManager.run()
         @rpcManager.run()
         @serviceManager.run()
-        @adapterManager.run()
-        
         @addTextRespond /^ping$/i,"",(response)=>
             response.replyText "PONG"
 
