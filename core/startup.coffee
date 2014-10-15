@@ -3,7 +3,8 @@ OptParse = require 'optparse'
 Path     = require 'path'
 MewBot   = require './mewbot.coffee'
 Fse      = require 'fs.extra'
-Cps      = require "child_process"
+Cps      = require 'child_process'
+Moment   = require 'moment'
 
 checkDirectory = (path)->
     dataFile = Path.join __dirname,"..",path
@@ -92,7 +93,7 @@ Parser.on "archive",(opt,value)->
     if value
         Options.archive = value
     else
-        Options.archive = "mewbot-#{new Date().getTime()}"
+        Options.archive = "mewbot-#{new Moment().format()}"
 
 Parser.on "name",(opt,value)->
     if value and value.length
