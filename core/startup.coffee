@@ -52,6 +52,7 @@ Options =
     archiveModule     :     ""
     archiveData       :     ""
     name              :     process.env.MEWBOT_NAME    or Path.basename(Path.join(__dirname,".."))
+    nameDefined       :     false
     services          :     []
     profile           :     process.env.MEWBOT_PROFILE or "default"
     build             :     false
@@ -100,23 +101,24 @@ Parser.on "archive",(opt,value)->
     if value
         Options.archive = value
     else
-        Options.archive = "mewbot-#{new Moment().format()}"
+        Options.archive = "#{Options.name}-#{new Moment().format()}"
 
 Parser.on "archive-module",(opt,value)->
     if value
         Options.archiveModule = value
     else
-        Options.archiveModule = "mewbot-module-#{new Moment().format()}"
+        Options.archiveModule = "#{Options.name}-module-#{new Moment().format()}"
 
 Parser.on "archive-data",(opt,value)->
     if value
         Options.archiveData = value
     else
-        Options.archiveData = "mewbot-data-#{new Moment().format()}"
+        Options.archiveData = "#{Options.name}-data-#{new Moment().format()}"
 
 Parser.on "name",(opt,value)->
     if value and value.length
         Options.name = value
+        Options.nameDefined = true
 
 Parser.parse process.argv
 
