@@ -38,7 +38,7 @@ class MewBot
                 if @options.nameDefined is false
                     if process.env.MEWBOT_NAME
                         @name = process.env.MEWBOT_NAME
-                        
+
                 tmpFolder = @getTmpFile()
                 Fs.exists tmpFolder,(exists)=>
                     if exists is false

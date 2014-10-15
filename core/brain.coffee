@@ -57,6 +57,8 @@ class Brain
                                 @mew.logger.error ex
                                 
     run : ->
+        @ruleManager.run()
+        @rpcManager.run()
         @serviceManager.run()
         @adapterManager.run()
         

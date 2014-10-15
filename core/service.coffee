@@ -27,15 +27,12 @@ class ServiceWrapper
                                 @mew.logger.debug "reading service [#{@name}] config error : #{e}"
                         @instance = new serviceClass @mew,serviceConfig
                         if @instance instanceof Mew.Service
+                            @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions
                             @instance.start (err)=>
                                 if err
                                     callback(err)
                                 else
-                                    @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions,(err)=>
-                                        if err
-                                            callback(err)
-                                        else
-                                            callback()
+                                    @mew.logger.debug "mew service #{@name} start complete"
                         else
                             callback("service module isnt a mew service")
                 catch ex

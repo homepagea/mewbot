@@ -34,8 +34,10 @@ class Response
 
 class RuleManager
     constructor : (@mew)->
-        @buildResponderTestRegex()
         @mewTextListenerPool = {}
+
+    run : ->
+        @buildResponderTestRegex()
 
     buildResponderTestRegex : ->
         @mewNameAtResponser = eval("/^@#{@mew.name} (.*)$/")
@@ -44,10 +46,19 @@ class RuleManager
         charArray = []
         for char in @mew.name
             if char not in charArray
-                charArray.push char
+                if char is '.'
+                    charArray.push "\\."
+                else if char is '*'
+                    charArray.push "\\*"
+                else if char is '|'
+                    charArray.push "\\|"
+                else 
+                    charArray.push "#{char}"
+        console.log charArray
         for char in charArray
             testString = "#{testString}#{char}|"
         testString = "#{testString}\\*|\\?)+:(.*)$/"
+        console.log testString
         @mewNameWCResponser = eval(testString)
 
     addTextRespond : (rule,adpaterMatchRule,callback)->

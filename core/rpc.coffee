@@ -103,9 +103,11 @@ rpcHandler = (rpcquery,object,ignored_functions,callback)->
         
 class RPCManager
     constructor : (@mew,@brain)->
-        @addRpcRespond "rpc",@
         @rpcInfoPool = {}
 
+    run : ->
+        @addRpcRespond "rpc",@
+        
     makeRpcRequest : (adapterMatchRole,role,timeout,domain,method,params,callback)->
         
     removeRpcRespond : (domain)->
