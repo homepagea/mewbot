@@ -3,7 +3,7 @@ OptParse = require 'optparse'
 Path     = require 'path'
 MewBot   = require './mewbot.coffee'
 Fse      = require 'fs.extra'
-
+Cps      = require "child_process"
 
 checkDirectory = (path)->
     dataFile = Path.join __dirname,"..",path
@@ -26,6 +26,7 @@ Switches = [
     [ "-h", "--help", "print help information" ],
     [ "-p", "--profile profile", "config profile of this mewbot" ],
     [ "-u", "--update", "update mewbot" ],
+    [ "-B", "--build", "build mewbot" ],
     [ "-D", "--debug", "debug mewbot" ],
     [ "-a", "--adapter adapter", "set adapter of this mewbot" ],
     [ "-s", "--service service", "add service on startup" ],
@@ -45,6 +46,7 @@ Options =
     name       :     process.env.MEWBOT_NAME    or "mewbot"
     services   :     []
     profile    :     process.env.MEWBOT_PROFILE or "default"
+    build      :     false
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -64,6 +66,9 @@ Parser.on "role",(opt,value)->
 
 Parser.on "update",(opt,value)->
     Options.update = true
+
+Parser.on "build",(opt,value)->
+    Options.build = true
 
 Parser.on "help",(opt,value)->
     Options.help = true
@@ -115,6 +120,32 @@ mewbot.init Options.profile,(err)->
             else
                 mewbot.logger.info "mewbot update success"
             process.exit 0
+        stdin = process.openStdin()
+    else if Options.build
+        mew_modules_dir = Path.join __dirname,"..","mew_modules"
+        Fs.readdir mew_modules_dir,(err,modules)->
+            if err
+                mewbot.logger.error err
+                process.exit 0
+            else
+                moduleBuildCallback = ->
+                    module = modules.shift()
+                    if module
+                        if module is ".git" or module is ".gitignore"
+                            moduleBuildCallback()
+                        else
+                            mewbot.logger.info "mewbot build #{module} ..."
+                            module_dir = Path.join __dirname,"..","mew_modules",module
+                            Cps.exec "cd '#{module_dir}' && npm rebuild --build-from-source",(err,stdout,stderr)->
+                                if err
+                                    mewbot.logger.error "mewbot build #{module} error : #{err}"
+                                else
+                                    mewbot.logger.info "mewbot build #{module} success"
+                                moduleBuildCallback()
+                    else
+                        mewbot.logger.info "mewbot build success"
+                        process.exit 0
+                moduleBuildCallback()
         stdin = process.openStdin()
     else if Options.archive.length
         archiver = mewbot.module("archiver")
