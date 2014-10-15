@@ -21,33 +21,35 @@ checkDirectory "/var/conf"
 checkDirectory "/mew_modules"
 
 Switches = [
-    [ "-n", "--name name", "name of this mewbot" ],
-    [ "-t", "--test testcase", "test case to run" ],
-    [ "-r", "--role client|server", "role of this mewbot" ],
-    [ "-h", "--help", "print help information" ],
-    [ "-p", "--profile profile", "config profile of this mewbot" ],
-    [ "-u", "--update", "update mewbot" ],
-    [ "-B", "--build", "build mewbot" ],
-    [ "-D", "--debug", "debug mewbot" ],
-    [ "-a", "--adapter adapter", "set adapter of this mewbot" ],
-    [ "-s", "--service service", "add service on startup" ],
-    [ "-A", "--archive pack", "archive mewbot" ],
-    [ "-m", "--module module", "check or get module from remote server" ]
+    [ "-n" , "--name name", "name of this mewbot" ],
+    [ "-t" , "--test testcase", "test case to run" ],
+    [ "-r" , "--role client|server", "role of this mewbot" ],
+    [ "-h" , "--help", "print help information" ],
+    [ "-p" , "--profile profile", "config profile of this mewbot" ],
+    [ "-u" , "--update", "update mewbot" ],
+    [ "-B" , "--build", "build mewbot" ],
+    [ "-D" , "--debug", "debug mewbot" ],
+    [ "-a" , "--adapter adapter", "set adapter of this mewbot" ],
+    [ "-s" , "--service service", "add service on startup" ],
+    [ "-A" , "--archive pack", "archive mewbot" ],
+    [ "--archive-module pack", "archive mewbot module" ],
+    [ "-m" , "--module module", "check or get module from remote server" ]
 ]
 
 Options = 
-    adapter    :     [] 
-    test       :     process.env.MEWBOT_TEST    or ""
-    role       :     process.env.MEWBOT_ROLE    or "client"
-    version    :     false
-    help       :     false
-    update     :     false
-    module     :     ""
-    archive    :     ""
-    name       :     process.env.MEWBOT_NAME    or "mewbot"
-    services   :     []
-    profile    :     process.env.MEWBOT_PROFILE or "default"
-    build      :     false
+    adapter           :     [] 
+    test              :     process.env.MEWBOT_TEST    or ""
+    role              :     process.env.MEWBOT_ROLE    or "client"
+    version           :     false
+    help              :     false
+    update            :     false
+    module            :     ""
+    archive           :     ""
+    archiveModule     :     ""
+    name              :     process.env.MEWBOT_NAME    or "mewbot"
+    services          :     []
+    profile           :     process.env.MEWBOT_PROFILE or "default"
+    build             :     false
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -95,6 +97,12 @@ Parser.on "archive",(opt,value)->
     else
         Options.archive = "mewbot-#{new Moment().format()}"
 
+Parser.on "archive-module",(opt,value)->
+    if value
+        Options.archiveModule = value
+    else
+        Options.archiveModule = "mewbot-module-#{new Moment().format()}"
+
 Parser.on "name",(opt,value)->
     if value and value.length
         Options.name = value
@@ -113,6 +121,9 @@ mewbot = new MewBot Options
 
 mewbot.init Options.profile,(err)->
     if Options.update
+        ###
+        handle update argument
+        ###
         mewbot.logger.info "mewbot update start ... "
         mewbot.updater.executeUpdate (err)->
             if err
@@ -123,6 +134,9 @@ mewbot.init Options.profile,(err)->
             process.exit 0
         stdin = process.openStdin()
     else if Options.build
+        ###
+        handle build argument
+        ###
         mew_modules_dir = Path.join __dirname,"..","mew_modules"
         Fs.readdir mew_modules_dir,(err,modules)->
             if err
@@ -149,6 +163,9 @@ mewbot.init Options.profile,(err)->
                 moduleBuildCallback()
         stdin = process.openStdin()
     else if Options.archive.length
+        ###
+        handle archive argument
+        ###
         archiver = mewbot.module("archiver")
         packFile = mewbot.getTmpFile Options.archive
         if Options.archive.indexOf(".zip") < 0
@@ -157,7 +174,22 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
             mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
+    else if Options.archiveModule.length
+        ###
+        handle archive-module argument
+        ###
+        archiver = mewbot.module("archiver")
+        packFile = mewbot.getTmpFile Options.archiveModule
+        if Options.archiveModule.indexOf(".zip") < 0
+            packFile = "#{packFile}.zip"
+        mewbot.logger.info "mewbot start archive module at #{packFile}"
+        archiver.zipFolder packFile,Path.join(__dirname,"..","mew_modules"),(err,pointer)->
+            mewbot.logger.info "mewbot archive module complete at #{packFile}"
+            process.exit 0
     else if Options.test and Options.test.length
+        ###
+        handle test argument
+        ###
         if Options.test is "all"
             Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)->
                 if files and files.length
@@ -192,5 +224,8 @@ mewbot.init Options.profile,(err)->
                     process.exit 0
         stdin = process.openStdin()
     else
+        ###
+        if no special argument is included, start run mewbot
+        ###
         mewbot.logger.info "mewbot start running"
         mewbot.brain.run()
