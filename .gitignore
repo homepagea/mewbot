@@ -1,6 +1,7 @@
 /var/log
 /var/conf
 /var/run
+/var/data
 /mewbot.sublime-project
 /mewbot.sublime-workspace
 /script/*
