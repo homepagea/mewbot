@@ -12,6 +12,7 @@ UserManager    = require './user.coffee'
 ServiceManager = require './service.coffee'
 Response       = (require './rule.coffee').Response
 Moment         = require 'moment'
+{EventEmitter} = require 'events'
 
 rebotRules     = [
     "1. A robot may not injure a human being or, through inaction, allow a human being to come to harm.",
@@ -22,11 +23,11 @@ rebotRules     = [
 isRegex = (value)->
     return Object.prototype.toString.call(value) is '[object RegExp]';
 
-class Brain
+class Brain extends EventEmitter
     constructor : (@mew)->
         @adapterManager = new AdapterManager @mew
         @userManager    = new UserManager @mew
-        @ruleManager    = new RuleManager @mew
+        @ruleManager    = new RuleManager @mew,@
         @serviceManager = new ServiceManager @mew,@
         @rpcManager     = new RPCManager @mew,@
         
@@ -40,18 +41,23 @@ class Brain
             adapter.sendText adapter.getBroadcastUser(),messages
 
     receive : (msgObject)->
+        @emit "mew.message.received",msgObject
         if msgObject.message instanceof Mew.Message.TextMessage
-            #@mew.logger.debug "Received Text Message #{JSON.stringify(msgObject)} "
+            @mew.logger.debug "Received Text Message : #{JSON.stringify(msgObject.message.text)}"
+            @emit "mew.message.text.received",msgObject
             matchPart = @ruleManager.getTextMatchPart msgObject.message.text
             if matchPart
+                @emit "mew.message.text.matched",msgObject,matchPart
                 for ruleKey of @ruleManager.mewTextListenerPool
                     listener = @ruleManager.mewTextListenerPool[ruleKey]
                     matchResult = matchPart.match listener.rule
                     if matchResult
+
                         if msgObject.message.done is false
                             response = new Response @mew,msgObject,listener,matchResult
                             try
                                 listener.callback(response)
+                                @emit "mew.message.text.response",response
                             catch ex
                                 @mew.logger.error "#{ex.stack}"
                                 @mew.logger.error ex

@@ -63,6 +63,8 @@ Parser.banner = "Usage mewbot [options]"
 Parser.on "test",(opt,value)->
     if value and value.length
         Options.test = value
+    else
+    	Options.test = "all"
 
 Parser.on "profile",(opt,value)->
     if value and value.length and /^[a-zA-Z0-9]+$/.test(value)

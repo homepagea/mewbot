@@ -33,7 +33,7 @@ class Response
 
 
 class RuleManager
-    constructor : (@mew)->
+    constructor : (@mew,@brain)->
         @mewTextListenerPool = {}
 
     run : ->
