@@ -11,6 +11,7 @@ RuleManager    = require './rule.coffee'
 UserManager    = require './user.coffee'
 ServiceManager = require './service.coffee'
 Response       = (require './rule.coffee').Response
+HttpServer     = require './http.coffee'
 Moment         = require 'moment'
 {EventEmitter} = require 'events'
 
@@ -30,6 +31,7 @@ class Brain extends EventEmitter
         @ruleManager    = new RuleManager @mew,@
         @serviceManager = new ServiceManager @mew,@
         @rpcManager     = new RPCManager @mew,@
+        @httpServer     = new HttpServer @mew,@
         
 
     addTextRespond : (rule,adpaterMatchRule,callback)->
@@ -67,9 +69,12 @@ class Brain extends EventEmitter
             if err
                 @mew.logger.error err
             @adapterManager.run()
+        
         @ruleManager.run()
         @rpcManager.run()
         @serviceManager.run()
+        @httpServer.run()
+
         @addTextRespond /^ping$/i,"",(response)=>
             response.replyText "PONG"
 
@@ -88,6 +93,8 @@ class Brain extends EventEmitter
 
         @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,"",(response)=>
             response.replyText rebotRules
+
+        
 
 
 
