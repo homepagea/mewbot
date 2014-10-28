@@ -28,11 +28,10 @@ class ServiceWrapper
                         @instance = new serviceClass @mew,serviceConfig
                         if @instance instanceof Mew.Service
                             @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions
-                            @instance.start (err)=>
-                                if err
-                                    callback(err)
-                                else
-                                    @mew.logger.debug "mew service #{@name} start complete"
+                            try
+                                @instance.start callback
+                            catch ex
+                                callback(ex)
                         else
                             callback("service module isnt a mew service")
                 catch ex
@@ -58,6 +57,7 @@ class ServiceManager
                 callback("service not found")
     run: ->
         serviceWrapperArray=[]
+
         for service in @mew.options.services
             if @serviceIndex[service]
                 @mew.logger.debug "service [#{service}] already started"
@@ -68,13 +68,19 @@ class ServiceManager
         serviceStartupCallback = =>
             wrapperInstance = serviceWrapperArray.shift()
             if wrapperInstance
+                @mew.logger.debug "service [#{wrapperInstance.name}] start begin"
                 wrapperInstance.start (err)=>
                     if err
                         delete @serviceIndex[wrapperInstance.name]
-                        @mew.logger.error "service [#{service}] start error : #{err}"
+                        @mew.logger.error "service [#{wrapperInstance.name}] start error : #{err}"
                     else
-                        @mew.logger.debug "service [#{service}] start complete"
-                    serviceStartupCallback()
+                        @mew.logger.debug "service [#{wrapperInstance.name}] start complete"
+                    try
+                        serviceStartupCallback()
+                    catch ex
+                        @mew.logger.error "#{ex.stack}"
+            else
+                @mew.logger.debug "all service start complete"
 
         serviceStartupCallback()
 

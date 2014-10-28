@@ -14,8 +14,8 @@ class MewBot
         @name    = @options.name
         @role    = @options.role
         @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @brain   = new Brain @
         @mm      = new ModuleManager @
+        @brain   = new Brain @
         @test    = new TestManager @
         @updater = new UpdateManager @
         process.on "uncaughtException",(err)=>
@@ -52,7 +52,8 @@ class MewBot
     
                     if process.env.MEWBOT_SERVICE
                         for service in process.env.MEWBOT_SERVICE.split(",")
-                            @options.services.push service
+                            if service in @options.services is false
+                                @options.services.push service
                     @exportProfile "backup",(err)=>
                             callback()
 

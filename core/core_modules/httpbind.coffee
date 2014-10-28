@@ -52,8 +52,13 @@ class HttpBind
                     @mew.logger.error "#{ex.stack}"
                     return res.json({status:'ERROR',msg : "#{ex.toString()}"})
 
-    bindHttp : (path,type,callback) ->
+    bindHttp : (path,type,callback) ->    
         if path and (typeof path is "string" or Object.prototype.toString.call(path) is "[object RegExp]")
+            if typeof type is 'function'
+                callback = type
+                type = "all"
+            if typeof callback isnt 'function'
+                throw new Error("callback is not a function")
             switch type
                 when "all" 
                     @mew.brain.httpManager.app.all path,callback

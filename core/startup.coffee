@@ -135,17 +135,18 @@ if Options.help
 mewbot = new MewBot Options
 
 mewbot.init Options.profile,(err)->
+    mewbot.logger.debug "#{mewbot.name} init complete with option : #{JSON.stringify(mewbot.options,null,4)}"
     if Options.update
         ###
         handle update argument
         ###
-        mewbot.logger.info "mewbot update start ... "
+        mewbot.logger.info "#{mewbot.name} update start ... "
         mewbot.updater.executeUpdate (err)->
             if err
-                mewbot.logger.info "mewbot update failed : "
+                mewbot.logger.info "#{mewbot.name} update failed : "
                 mewbot.logger.error err
             else
-                mewbot.logger.info "mewbot update success"
+                mewbot.logger.info "#{mewbot.name} update success"
             process.exit 0
         stdin = process.openStdin()
     else if Options.build
