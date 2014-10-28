@@ -254,5 +254,5 @@ mewbot.init Options.profile,(err)->
         ###
         if no special argument is included, start run mewbot
         ###
-        mewbot.logger.info "mewbot start running"
+        mewbot.logger.info "mewbot start running on : #{new Moment().format()}"
         mewbot.brain.run()

@@ -31,7 +31,7 @@ class Brain extends EventEmitter
         @ruleManager    = new RuleManager @mew,@
         @serviceManager = new ServiceManager @mew,@
         @rpcManager     = new RPCManager @mew,@
-        @httpServer     = new HttpServer @mew,@
+        @httpManager    = new HttpServer @mew,@
         
 
     addTextRespond : (rule,adpaterMatchRule,callback)->
@@ -65,15 +65,15 @@ class Brain extends EventEmitter
                                 @mew.logger.error ex
                                 
     run : ->
+        @httpManager.run()
         @adapterManager.initAdapters @mew.options.adapter,(err)=>
             if err
                 @mew.logger.error err
             @adapterManager.run()
-        
+
         @ruleManager.run()
         @rpcManager.run()
         @serviceManager.run()
-        @httpServer.run()
 
         @addTextRespond /^ping$/i,"",(response)=>
             response.replyText "PONG"
