@@ -61,6 +61,11 @@ class MewBot
                     @exportProfile "backup",(err)=>
                             callback()
 
+    getSourceFile : (path)->
+        if path
+            Path.join(__dirname,"..",path)
+        else
+            return Path.join(__dirname,"..")
 
     getDataFile : (externalPath) ->
         if externalPath

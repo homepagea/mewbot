@@ -38,7 +38,8 @@ Switches = [
     [ "-A" , "--archive pack", "archive mewbot" ],
     [ "--archive-module pack", "archive mewbot module" ],
     [ "--archive-data pack", "archive mewbot data" ],
-    [ "-m" , "--module module", "check or get module from remote server" ]
+    [ "-m" , "--module module", "check or get module from remote server" ],
+    [ "--env kvp", "config enviorment key value pair using : <key>=<value>" ]
 ]
 
 Options = 
@@ -71,6 +72,18 @@ Parser.on "test",(opt,value)->
 Parser.on "port",(opt,value)->
     if value and value.length and /^[0-9]+$/.test(value)
         Options.port = parseInt(value)
+
+Parser.on "env",(opt,value)->
+    if value
+        idxOfEqual = value.indexOf("=")
+        if idxOfEqual > 0
+            key = value.substr(0,idxOfEqual)
+            value = value.substr(idxOfEqual+1)
+            if key and value
+                key = key.replace(/(^\s*)|(\s*$)/g,"")
+                value = value.replace(/(^\s*)|(\s*$)/g,"")
+                if key and value
+                    process.env[key]=value
 
 Parser.on "profile",(opt,value)->
     if value and value.length and /^[a-zA-Z0-9]+$/.test(value)
