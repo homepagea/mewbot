@@ -31,10 +31,14 @@ class MewBot
                     @logger.error err
                     @port=process.env.MEWBOT_PORT || 3030
                 else
-                    if process.env.MEWBOT_PORT
-                        @port=process.env.MEWBOT_PORT
+                    if @options.port
+                        @port = @options.port
                     else
-                        @port=port
+                        if process.env.MEWBOT_PORT
+                            @port=process.env.MEWBOT_PORT
+                        else
+                            @port=port
+                            
                 if @options.nameDefined is false
                     if process.env.MEWBOT_NAME
                         @name = process.env.MEWBOT_NAME

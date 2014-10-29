@@ -1,1 +1,1 @@
-web: node ./node_modules/coffee-script/bin/coffee ./core/startup.coffee 
+web: node ./node_modules/coffee-script/bin/coffee ./core/startup.coffee -D --port $PORT

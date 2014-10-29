@@ -29,6 +29,7 @@ Switches = [
     [ "-r" , "--role client|server", "role of this mewbot" ],
     [ "-h" , "--help", "print help information" ],
     [ "-p" , "--profile profile", "config profile of this mewbot" ],
+    [ "--port port", "config port of this mewbot" ],
     [ "--update", "update mewbot" ],
     [ "-B" , "--build", "build mewbot" ],
     [ "-D" , "--debug", "debug mewbot" ],
@@ -56,6 +57,7 @@ Options =
     services          :     []
     profile           :     process.env.MEWBOT_PROFILE or "default"
     build             :     false
+    port              :     0
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -65,6 +67,10 @@ Parser.on "test",(opt,value)->
         Options.test = value
     else
     	Options.test = "all"
+
+Parser.on "port",(opt,value)->
+    if value and value.length and /^[0-9]+$/.test(value)
+        Options.port = parseInt(value)
 
 Parser.on "profile",(opt,value)->
     if value and value.length and /^[a-zA-Z0-9]+$/.test(value)
