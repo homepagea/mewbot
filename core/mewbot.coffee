@@ -2,6 +2,7 @@ Brain          = require './brain.coffee'
 ModuleManager  = require './mm.coffee'
 TestManager    = require './test.coffee'
 UpdateManager  = require './update.coffee'
+DeployManager  = require './deploy.coffee'
 Path           = require 'path'
 Fs             = require 'fs'
 Log            = require 'log'
@@ -11,13 +12,14 @@ Portfinder     = require 'portfinder'
 
 class MewBot
     constructor : (@options)->
-        @name    = @options.name
-        @role    = @options.role
-        @logger  = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
-        @mm      = new ModuleManager @
-        @brain   = new Brain @
-        @test    = new TestManager @
-        @updater = new UpdateManager @
+        @name     = @options.name
+        @role     = @options.role
+        @logger   = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
+        @mm       = new ModuleManager @
+        @brain    = new Brain @
+        @test     = new TestManager @
+        @updater  = new UpdateManager @
+        @deployer = new DeployManager @
         process.on "uncaughtException",(err)=>
             @logger.error "#{err.stack}"
             @logger.error err
@@ -60,12 +62,6 @@ class MewBot
                                 @options.services.push service
                     @exportProfile "backup",(err)=>
                             callback()
-
-    getSourceFile : (path)->
-        if path
-            Path.join(__dirname,"..",path)
-        else
-            return Path.join(__dirname,"..")
 
     getDataFile : (externalPath) ->
         if externalPath
