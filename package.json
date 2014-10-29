@@ -1,0 +1,31 @@
+{
+  "name": "mewbot",
+  "version": "1.0.0",
+  "author": {
+    "name": "other"
+  },
+  "keywords": [
+    "mewbot",
+    "hubot",
+    "mew",
+    "bot"
+  ],
+  "description": "A robot for everything",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/github/hubot/raw/master/LICENSE.md"
+    }
+  ],
+  "engines": {
+    "node": ">= 0.8.x",
+    "npm": ">= 1.1.x"
+  },
+  "main": "./core/mewbot.coffee",
+  "bin": {
+    "mewbot": "./core/startup.coffee"
+  },
+  "readme": "mewbot is everything",
+  "readmeFilename": "README.md",
+  "_id": "mewbot@1.0.0"
+}
