@@ -23,10 +23,13 @@ class HttpServer
         try
             @app.listen @mew.port
             @mew.logger.debug "start http server success at port : #{@mew.port}"
+            @app.all "/gateway/api/ping.jsp",(req,res,next)=>
+                res.send "SUCCESS"
         catch err
             @mew.logger.error "error trying to start http server: #{err}"
             @mew.logger.error "#{err.stack}"
             process.exit(1)
+
 
 
 module.exports=HttpServer
