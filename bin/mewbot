@@ -10,11 +10,13 @@ SELF=`readlink -e $PRGDIR/mewbot`
 mkdir -p $PRGDIR/../var/log
 mkdir -p $PRGDIR/../var/conf
 mkdir -p $PRGDIR/../var/run
+touch $PRGDIR/../var/run/mewbot.pid
+touch $PRGDIR/../var/log/mewbot.log
 
-
+forever_uid=`readlink -e $PRGDIR`
+forever_dir=`readlink -e $PRGDIR/../var/run`
 pidfile=`readlink -e $PRGDIR/../var/run/mewbot.pid`
 logfile=`readlink -e $PRGDIR/../var/log/mewbot.log`
-forever_dir=$PRGDIR/../var
 monitor=`readlink -e $PRGDIR/../node_modules/forever/bin/monitor`
 forever=`readlink -e $PRGDIR/../node_modules/forever/bin/forever`
 
@@ -33,7 +35,7 @@ case $1 in
 	        echo "mewbot already started"                                                
 	    	exit 1                                 
 	    else
-	    	$forever start -p "$forever_dir/run" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
 	    fi
 	    ;;
 	"stop")
@@ -53,9 +55,9 @@ case $1 in
 	    	pidScript=$(findScriptPID)
 	    	kill $pidForever
 	    	kill $pidScript
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
 	    else
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
 	    fi	    
 	    ;;
     "run")
