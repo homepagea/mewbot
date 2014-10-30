@@ -33,7 +33,7 @@ case $1 in
 	        echo "mewbot already started"                                                
 	    	exit 1                                 
 	    else
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir/run" --pidFile "$pidfile" -l "$logfile" --uid "$PRGDIR" -a -c $SCRIPT
 	    fi
 	    ;;
 	"stop")
