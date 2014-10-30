@@ -93,6 +93,20 @@ initLocationService = (location,config,callback)->
 class DeployerManager
     constructor : (@mew)->
 
+    ###
+    deploy mewbot to target location : 
+    config file format : {
+        profile : {
+                key value pair write to default profile
+        },
+        modules : [modules to include],
+        service :{
+               service_name : {
+                         service configuration
+               }
+        }
+    }
+    ###
     deployTo : (location,config,callback) ->
         if location
             if typeof config is 'function'
