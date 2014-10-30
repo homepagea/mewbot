@@ -3,6 +3,24 @@ Fs             = require 'fs'
 Log            = require 'log'
 Os             = require 'os'
 Fse            = require 'fs.extra'
+checkPermission = (file, mask, cb)->
+    Fs.stat file,(error, stats)->
+        if (error)
+            cb(error,false);
+        else
+            cb(null,!!(mask & parseInt((stats.mode&parseInt("777",8)).toString(8)[0])),stats.mode)
+
+makeTargetExecutable = (file,callback)->
+    checkPermission file,1,(err,execute,mode)->
+        return callback(err) if err
+        if execute is false
+            Fs.chmod file,mode|parseInt("111",8),(err)->
+                if err
+                    callback(err)
+                else
+                    callback()
+        else
+            callback()
 
 getLocationFile = (location,path)->
     if path
@@ -36,7 +54,20 @@ initLocationBasicHirastructor = (location,callback)->
                         Fse.overwrite getSourceFile("package.json"),getLocationFile(location,"package.json"),(err)->
                             makeLocationDir(location,"/var/conf")
                             makeLocationDir(location,"/mew_modules")
-                            callback()
+                            if process.platform isnt "win32"
+                                makeTargetExecutable getLocationFile(location,"/bin/mewbot.sh"),(err)->
+                                    return callback(err) if err
+                                    makeTargetExecutable getLocationFile(location,"/bin/mewbot"),(err)->
+                                        return callback(err) if err
+                                        makeTargetExecutable getLocationFile(location,"/node_modules/coffee-script/bin/coffee"),(err)->
+                                            return callback(err) if err
+                                            makeTargetExecutable getLocationFile(location,"/node_modules/forever/bin/forever"),(err)->
+                                                return callback(err) if err
+                                                makeTargetExecutable getLocationFile(location,"/node_modules/forever/bin/monitor"),(err)->
+                                                    return callback(err) if err
+                                                    callback()
+                            else
+                                callback()
 
 initLocationProfile = (location,config,callback)->
     if config.profile

@@ -1,9 +1,11 @@
 #!/bin/bash
 PRG="$0"
 PRGDIR=`dirname "$PRG"`
+NODE=node
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
 SCRIPT="$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee"
 SELF=`readlink -e $PRGDIR/mewbot`
+
 
 mkdir -p $PRGDIR/../var/log
 mkdir -p $PRGDIR/../var/conf
@@ -59,6 +61,9 @@ case $1 in
     "run")
         $SCRIPT
         ;;
+    "deploy")
+	    $SCRIPT --deploy $2
+	    ;;
     "debug")
         export MEWBOT_LOG_LEVEL=debug
         $SCRIPT

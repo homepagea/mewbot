@@ -40,6 +40,7 @@ Switches = [
     [ "--archive-data pack", "archive mewbot data" ],
     [ "-m" , "--module module", "check or get module from remote server" ],
     [ "--env kvp", "config enviorment key value pair using : <key>=<value>" ]
+    [ "--deploy deployLocation", "deploy mewbot to target location" ]
 ]
 
 Options = 
@@ -59,6 +60,7 @@ Options =
     profile           :     process.env.MEWBOT_PROFILE or "default"
     build             :     false
     port              :     0
+    deploy            :     ""
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -67,7 +69,7 @@ Parser.on "test",(opt,value)->
     if value and value.length
         Options.test = value
     else
-    	Options.test = "all"
+        Options.test = "all"
 
 Parser.on "port",(opt,value)->
     if value and value.length and /^[0-9]+$/.test(value)
@@ -111,11 +113,11 @@ Parser.on "debug",(opt,value)->
     process.env.MEWBOT_LOG_LEVEL="debug"
 
 Parser.on "adapter",(opt,value)->
-    if value and value.length
+    if value 
         Options.adapter.push value
 
 Parser.on "service",(opt,value)->
-    if value and value.length
+    if value 
         Options.services.push value
 
 Parser.on "archive",(opt,value)->
@@ -137,9 +139,15 @@ Parser.on "archive-data",(opt,value)->
         Options.archiveData = "#{Options.name}-data-#{new Moment().format()}"
 
 Parser.on "name",(opt,value)->
-    if value and value.length
+    if value 
         Options.name = value
         Options.nameDefined = true
+
+Parser.on "deploy",(opt,value)->
+    if value 
+        Options.deploy=value
+    else
+        Options.deploy=process.cwd()
 
 Parser.parse process.argv
 
@@ -184,16 +192,16 @@ mewbot.init Options.profile,(err)->
                         if module is ".git" or module is ".gitignore"
                             moduleBuildCallback()
                         else
-                            mewbot.logger.info "mewbot build #{module} ..."
+                            mewbot.logger.info "#{mewbot.name} build #{module} ..."
                             module_dir = Path.join __dirname,"..","mew_modules",module
                             Cps.exec "cd '#{module_dir}' && npm rebuild --build-from-source",(err,stdout,stderr)->
                                 if err
-                                    mewbot.logger.error "mewbot build #{module} error : #{err}"
+                                    mewbot.logger.error "#{mewbot.name} build #{module} error : #{err}"
                                 else
-                                    mewbot.logger.info "mewbot build #{module} success"
+                                    mewbot.logger.info "#{mewbot.name} build #{module} success"
                                 moduleBuildCallback()
                     else
-                        mewbot.logger.info "mewbot build success"
+                        mewbot.logger.info "#{mewbot.name} build success"
                         process.exit 0
                 moduleBuildCallback()
         stdin = process.openStdin()
@@ -205,7 +213,7 @@ mewbot.init Options.profile,(err)->
         packFile = mewbot.getTmpFile Options.archive
         if Options.archive.indexOf(".zip") < 0
             packFile = "#{packFile}.zip"
-        mewbot.logger.info "mewbot start archive at #{packFile}"
+        mewbot.logger.info "#{mewbot.name} start archive at #{packFile}"
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
             mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
@@ -217,9 +225,9 @@ mewbot.init Options.profile,(err)->
         packFile = mewbot.getTmpFile Options.archiveModule
         if Options.archiveModule.indexOf(".zip") < 0
             packFile = "#{packFile}.zip"
-        mewbot.logger.info "mewbot start archive module at #{packFile}"
+        mewbot.logger.info "#{mewbot.name} start archive module at #{packFile}"
         archiver.zipFolder packFile,Path.join(__dirname,"..","mew_modules"),(err,pointer)->
-            mewbot.logger.info "mewbot archive module complete at #{packFile}"
+            mewbot.logger.info "#{mewbot.name} archive module complete at #{packFile}"
             process.exit 0
     else if Options.archiveData.length
         ###
@@ -229,10 +237,42 @@ mewbot.init Options.profile,(err)->
         packFile = mewbot.getTmpFile Options.archiveData
         if Options.archiveData.indexOf(".zip") < 0
             packFile = "#{packFile}.zip"
-        mewbot.logger.info "mewbot start archive data at #{packFile}"
+        mewbot.logger.info "#{mewbot.name} start archive data at #{packFile}"
         archiver.zipFolder packFile,Path.join(__dirname,"..","var"),(err,pointer)->
-            mewbot.logger.info "mewbot archive data complete at #{packFile}"
+            mewbot.logger.info "#{mewbot.name} archive data complete at #{packFile}"
             process.exit 0
+    else if Options.deploy and Options.deploy.length
+        Fs.exists Options.deploy,(exists)->
+            if exists is false
+                Fse.mkdirRecursiveSync Options.deploy
+            Fs.exists Options.deploy,(exists)->
+                if exists
+                    Fs.stat Options.deploy,(err,stat)->
+                        if err
+                            mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                            process.exit 1
+                        else
+                            if stat.isDirectory()
+                                Fs.readdir Options.deploy,(err,items)->
+                                    if err
+                                        mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                                        process.exit 1
+                                    else if items and items.length
+                                        mewbot.logger.error "#{mewbot.name} deploy error : target location [#{Options.deploy}] is not empty"
+                                        process.exit 1
+                                    else
+                                        mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy}"
+                                        mewbot.deployer.deployTo Options.deploy,(err)->
+                                            if err
+                                                mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                                            else
+                                                mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                            else
+                                mewbot.logger.error "#{mewbot.name} deploy error : target location [#{Options.deploy}] is not a directory"
+                                process.exit 1
+                else
+                    mewbot.logger.error "#{mewbot.name} deploy error : permission error"
+                    process.exit 1
     else if Options.test and Options.test.length
         ###
         handle test argument
@@ -258,7 +298,7 @@ mewbot.init Options.profile,(err)->
                     mewbot.test.runTest testPathArray,(err,result)->
                         process.exit 0
                 else
-                    console.log "there is no test"
+                    mewbot.logger.info "there is no test"
                     process.exit 0
         else
             testPath = Path.join(__dirname,"..","testrc","#{Options.test}.coffee")
