@@ -130,7 +130,8 @@ class MewBot
             else
                 if profileName is "default"
                     if callback
-                        callback("config profile [#{profileName}] not found")
+                        @logger.debug "default config profile not found"
+                        callback()
                 else
                     @logger.debug "config profile [#{profileName}] not found, using default profile ..."
                     @changeProfile "default",callback
