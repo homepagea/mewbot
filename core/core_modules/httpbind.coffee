@@ -59,6 +59,7 @@ class HttpBind
                 type = "all"
             if typeof callback isnt 'function'
                 throw new Error("callback is not a function")
+            @mew.logger.debug "#{@mew.name} bind http[#{type}] to #{path.toString()}"
             switch type
                 when "all" 
                     @mew.brain.httpManager.app.all path,callback
