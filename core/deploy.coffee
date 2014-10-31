@@ -84,7 +84,7 @@ initLocationModule = (location,config,callback)->
     moduleArray = []
     if config.modules and Array.isArray(config.modules)
         for module in config.modules
-            if Fs.existsSync(@getSourceFile("/mew_modules/#{module}/package.json"))
+            if Fs.existsSync(getSourceFile("/mew_modules/#{module}/package.json"))
                 moduleArray.push module
     moduleArrayCallback = ->
         module = moduleArray.shift()
@@ -110,7 +110,7 @@ initLocationService = (location,config,callback)->
     serviceArrayCallback = =>
         service = serviceArray.shift()
         if service
-            Fs.write app.getRepoFile("/var/conf/!#{service.name}"),JSON.stringify(service.config),(err)->
+            Fs.writeFile getLocationFile(location,"/var/conf/!#{service.name}"),JSON.stringify(service.config),(err)->
                 return callback(err) if err
                 Fse.overwriteRecursive getSourceFile("/mew_modules/!#{service.name}"),makeLocationDir(location,"/mew_modules/!#{service.name}"),(err)->
                     if err
