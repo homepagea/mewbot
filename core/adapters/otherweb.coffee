@@ -26,7 +26,7 @@ class OTHERWebAdapter extends Mew.Adapter.MultiAdapter
         if @externOpts
             @options = Extend(@options,@externOpts)
             @options.password = '"********"'
-        @mew.logger.info util.inspect(@options)
+        @mew.logger.debug util.inspect(@options)
         if @options.username and @options.password and @options.rooturl and @options.useragent
             if @externOpts
                 @options.password = @externOpts.password

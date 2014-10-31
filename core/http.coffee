@@ -13,13 +13,13 @@ class HttpServer
         @app = express()
         
     run : ->
-        user    = process.env.EXPRESS_USER
-        pass    = process.env.EXPRESS_PASSWORD
+        user    = process.env.HTTP_USER
+        pass    = process.env.HTTP_PASSWORD
         @app.use express.basicAuth user, pass if user and pass
         @app.use express.query()
         @app.use express.bodyParser()
         @app.use express.cookieParser()
-        @app.use express.session({secret:"OSESSIONID"})
+        @app.use express.session({secret:"MSESSIONID"})
         try
             @app.listen @mew.port
             @mew.logger.debug "start http server success at port : #{@mew.port}"
