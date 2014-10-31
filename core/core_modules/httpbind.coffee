@@ -1,6 +1,7 @@
 Fs   = require 'fs'
 Fse  = require 'fs.extra'
 Path = require 'path'
+express = require 'express'
 
 findTargetPath = (folder,filename,index,callback)->
     targetPath = ""
@@ -16,6 +17,20 @@ findTargetPath = (folder,filename,index,callback)->
 
 class HttpBind
     constructor : (@mew)->
+        @staticPathDefinitionPool = {}
+
+    bindStatic : (location,context)->
+        if location and context
+            if Fs.existsSync(location)
+                if @staticPathDefinitionPool[context]
+                    throw new Error("target static context already bind to : #{@staticPathDefinitionPool[context]}")
+                else
+                    @mew.brain.httpManager.app.use context,express.static(location)
+                    @staticPathDefinitionPool[context]=location
+            else
+                throw new Error("location not exists")
+        else
+            throw new Error("location or context not defined")
 
     bindUpload : (path,folder,callback)->
         @bindHttp path,"post",(req,res,next)=>
