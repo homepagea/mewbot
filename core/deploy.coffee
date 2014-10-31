@@ -116,6 +116,12 @@ initLocationService = (location,config,callback)->
                     if err
                         callback(err)
                     else
+                        if typeof config.profile is 'undefined'
+                            config.profile={}
+                        if config.profile.MEWBOT_SERVICE
+                            config.profile.MEWBOT_SERVICE = "#{config.profile.MEWBOT_SERVICE},#{service.name}"
+                        else
+                            config.profile.MEWBOT_SERVICE = "#{service.name}"
                         serviceArrayCallback()
         else
             callback()
@@ -131,7 +137,7 @@ class DeployerManager
                 key value pair write to default profile
         },
         modules : [modules to include],
-        service :{
+        services :{
                service_name : {
                          service configuration
                }
@@ -153,15 +159,12 @@ class DeployerManager
                         if stat.isDirectory()
                             initLocationBasicHirastructor location,(err)=>
                                 return callback(err) if err
-                                initLocationProfile location,config,(err)->
+                                initLocationModule location,config,(err)=>
                                     return callback(err) if err
-                                    initLocationModule location,config,(err)=>
+                                    initLocationService location,config,(err)=>
                                         return callback(err) if err
-                                        initLocationService location,config,(err)=>
-                                            if err
-                                                callback(err) 
-                                            else
-                                                callback()
+                                        initLocationProfile location,config,(err)=>
+                                            callback(err)
                         else
                             callback("location is not a directory")
         else

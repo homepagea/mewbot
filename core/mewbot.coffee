@@ -55,7 +55,6 @@ class MewBot
                                 @options.adapter.push adapter
                         else
                             @options.adapter.push "shell"
-    
                     if process.env.MEWBOT_SERVICE
                         for service in process.env.MEWBOT_SERVICE.split(",")
                             if service in @options.services is false
