@@ -23,7 +23,7 @@
   },
   "main": "./core/mewbot.coffee",
   "bin": {
-    "mewbot": "./core/startup.coffee"
+    "mewbot": "./node_modules/coffee-script/bin/coffee ./core/startup.coffee -D"
   },
   "readme": "mewbot is everything",
   "readmeFilename": "README.md",

@@ -6,6 +6,9 @@ Validator = require 'validator'
 wildcard = require 'wildcard'
 uuid     = require 'uuid'
 
+isRegex = (value)->
+    return Object.prototype.toString.call(value) is '[object RegExp]';
+
 checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
     if adapterInstance instanceof Mew.Adapter or adapterInstance instanceof Mew.Adapter.MultiAdapter
         if typeof brain.adapterPool[name] is 'undefined'

@@ -32,40 +32,107 @@ class HttpBind
         else
             throw new Error("location or context not defined")
 
+
     bindUpload : (path,folder,callback)->
-        @bindHttp path,"post",(req,res,next)=>
-            Fs.exists folder,(exists)=>
-                if exists is false
-                    Fse.mkdirRecursiveSync folder
-                try
-                    if req.files.file
-                        tempPath = req.files.file.path
-                        findTargetPath folder,req.files.file.name,0,(targetPath)=>
-                            try
-                                Fse.move tempPath,targetPath,(err)=>
-                                    if err
-                                        @mew.logger.error err
-                                        Fs.unlink tempPath
-                                        return res.json({status:'ERROR',msg : err.toString()})
+        do(folder)=>
+            @bindHttp path,"post",(req,res,next)=>
+                Fs.exists folder,(exists)=>
+                    if exists is false
+                        Fse.mkdirRecursiveSync folder
+                    try
+                        if req.files.file
+                            tempPath = req.files.file.path
+                            @mew.logger.debug "uploading file : #{files.file}"
+                            findTargetPath folder,req.files.file.name,0,(targetPath)=>
+                                try
+                                    Fse.move tempPath,targetPath,(err)=>
+                                        if err
+                                            @mew.logger.error err
+                                            Fs.unlink tempPath
+                                            return res.json({status:'ERROR',msg : err.toString()})
+                                        else
+                                            try
+                                                callback targetPath,req,(err)=>
+                                                    if err
+                                                        @mew.logger.error err
+                                                        Fs.unlink tempPath
+                                                        return res.json({status:'ERROR',msg : err.toString()})
+                                                    else
+                                                        return res.json({status:'SUCCESS',path : Path.basename(targetPath)})
+                                            catch ex
+                                                @mew.logger.error "#{ex.stack}"
+                                                Fs.unlink tempPath
+                                                return res.json({status:'ERROR',msg : "#{ex.toString()}"})
+                                catch ex
+                                    @mew.logger.error "#{ex.stack}"
+                                    Fs.unlink tempPath
+                                    return res.json({status:'ERROR',msg : "#{ex.toString()}"})
+                        else
+                            if req.files.files
+                                if Array.isArray(req.files.files) is false
+                                    req.files.files=[req.files.files]
+                                multipleFileHandleResult = []
+                                multipleFileHandleCallback = =>
+                                    fileInfo = req.files.files.shift()
+                                    if fileInfo
+                                        tempPath = fileInfo.path
+                                        @mew.logger.debug "uploading multiple file : #{fileInfo.name}"
+                                        findTargetPath folder,fileInfo.name,0,(targetPath)=>
+                                            try
+                                                Fse.overwrite tempPath,targetPath,(err)=>
+                                                    if err
+                                                        @mew.logger.error err
+                                                        Fs.unlink tempPath
+                                                        multipleFileHandleResult.push {
+                                                            status : 'error'
+                                                            name : fileInfo.name,
+                                                            msg : err.toString()
+                                                        }
+                                                        multipleFileHandleCallback()
+                                                    else
+                                                        try
+                                                            callback targetPath,req,(err)=>
+                                                                if err
+                                                                    Fs.unlink tempPath
+                                                                    @mew.logger.error err
+                                                                    multipleFileHandleResult.push {
+                                                                        status : 'error'
+                                                                        name : fileInfo.name,
+                                                                        msg : err.toString()
+                                                                    }
+                                                                    multipleFileHandleCallback()
+                                                                else
+                                                                    multipleFileHandleResult.push {
+                                                                        status : 'success'
+                                                                        name : fileInfo.name
+                                                                    }
+                                                                    multipleFileHandleCallback()
+                                                        catch ex
+                                                            Fs.unlink tempPath
+                                                            @mew.logger.error "#{ex.stack}"
+                                                            multipleFileHandleResult.push {
+                                                                status : 'error'
+                                                                name : fileInfo.name,
+                                                                msg : ex.toString()
+                                                            }
+                                                            multipleFileHandleCallback()
+                                            catch ex
+                                                Fs.unlink tempPath
+                                                @mew.logger.error "#{ex.stack}"
+                                                multipleFileHandleResult.push {
+                                                    status : 'error'
+                                                    name : fileInfo.name,
+                                                    msg : ex.toString()
+                                                }
+                                                multipleFileHandleCallback()
                                     else
-                                        try
-                                            callback null,targetPath,req,(err)=>
-                                                if err
-                                                    @mew.logger.error err
-                                                    return res.json({status:'ERROR',msg : err.toString()})
-                                                else
-                                                    return res.json({status:'SUCCESS',path : Path.basename(targetPath)})
-                                        catch ex
-                                            @mew.logger.error "#{ex.stack}"
-                                            return res.json({status:'ERROR',msg : "#{ex.toString()}"})
-                            catch ex
-                                @mew.logger.error "#{ex.stack}"
-                                return res.json({status:'ERROR',msg : "#{ex.toString()}"})
-                    else
-                        return res.json({status:'ERROR',msg : "file not found"})
-                catch ex
-                    @mew.logger.error "#{ex.stack}"
-                    return res.json({status:'ERROR',msg : "#{ex.toString()}"})
+                                        return res.json({status:'SUCCESS', result : multipleFileHandleResult})
+                                multipleFileHandleCallback()
+                            else
+                                return res.json({status:'ERROR',msg : "file not found"})
+                    catch ex
+                        @mew.logger.error "#{ex.stack}"
+                        return res.json({status:'ERROR',msg : "#{ex.toString()}"})
 
     bindHttp : (path,type,callback) ->    
         if path and (typeof path is "string" or Object.prototype.toString.call(path) is "[object RegExp]")
