@@ -40,6 +40,38 @@ getSourceFile = (path)->
     else
         return Path.join(__dirname,"..")
 
+initLocationDataCopy  = (mew,location,config,callback)->
+    if config.datas and Array.isArray(config.datas)
+        dataCopyCallback = ->
+            makeLocationDir(location,"/var/data")
+            data = config.datas.shift()
+            if data
+                dataFile = mew.getDataFile(data)
+                Fs.exists dataFile,(exists)->
+                    if exists
+                        Fs.stat dataFile,(err,stat)->
+                            if err
+                                callback(err)
+                            else
+                                if stat.isDirectory()
+                                    Fse.overwriteRecursive dataFile,makeLocationDir(location,"/var/data/#{data}"),(err)->
+                                        if err
+                                            callback(err)
+                                        else
+                                            dataCopyCallback()
+                                else
+                                    Fse.overwrite dataFile,getLocationFile(location,"/var/data/#{data}"),(err)->
+                                        if err
+                                            callback(err)
+                                        else
+                                            dataCopyCallback()
+                    else
+                        callback("data file to copy : [#{data}] doesnt exists")
+            else
+                callback()
+        dataCopyCallback()
+    else
+        callback()
 initLocationBasicHirastructor = (location,callback)->
     Fse.overwriteRecursive getSourceFile("node_modules"),makeLocationDir(location,"node_modules"),(err)->
         return callback(err) if err
@@ -164,7 +196,9 @@ class DeployerManager
                                     initLocationService location,config,(err)=>
                                         return callback(err) if err
                                         initLocationProfile location,config,(err)=>
-                                            callback(err)
+                                            return callback(err) if err
+                                            initLocationDataCopy @mew,location,config,(err)=>
+                                                callback(err)
                         else
                             callback("location is not a directory")
         else
