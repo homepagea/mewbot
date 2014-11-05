@@ -73,5 +73,5 @@ case $1 in
     "test")
         $SCRIPT --test all
         ;;
-    * ) echo "usage: mewbot run|start|stop|retart" ;;
+    * ) echo "usage: mewbot run|start|stop|retart|deploy" ;;
 esac

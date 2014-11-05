@@ -2,6 +2,20 @@ Fs   = require 'fs'
 Fse  = require 'fs.extra'
 Path = require 'path'
 express = require 'express'
+os      = require 'os'
+
+getLocalIP = ->
+    ifaces = os.networkInterfaces()
+    addresses = []
+    for dev of ifaces
+        ifaces[dev].forEach (details)->
+            if details.family is 'IPv4' and details.internal is false
+                addresses.push(details.address)
+    if addresses.length is 0
+        return "127.0.0.1"
+    else
+        return addresses[0]
+
 
 findTargetPath = (folder,filename,index,callback)->
     targetPath = ""
@@ -32,6 +46,8 @@ class HttpBind
         else
             throw new Error("location or context not defined")
 
+    getHostBaseURL : ->
+        return process.env.MEWBOT_HOST || "http://#{getLocalIP()}:#{@mew.port}"
 
     bindUpload : (path,folder,callback)->
         do(folder)=>
@@ -153,6 +169,8 @@ class HttpBind
                     throw new Error("type : [#{type}] not defined")
         else
             throw new Error("path not defined or type error")
+
+
 
 
 module.exports=HttpBind
