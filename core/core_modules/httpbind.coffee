@@ -33,7 +33,7 @@ class HttpBind
     constructor : (@mew)->
         @staticPathDefinitionPool = {}
 
-    bindStatic : (location,context)->
+    bindStatic : (context,location)->
         if location and context
             if Fs.existsSync(location)
                 if @staticPathDefinitionPool[context]
