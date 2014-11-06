@@ -170,7 +170,7 @@ mewbot = new MewBot Options
 
 mewbot.init Options.profile,(err)->
     mewbot.logger.debug "#{mewbot.name} init complete with option : #{JSON.stringify(mewbot.options,null,4)}"
-    if Options.update
+    if Options.update and process.platform isnt "win32"
         ###
         handle update argument
         ###
@@ -279,7 +279,7 @@ mewbot.init Options.profile,(err)->
                                                             when ".coffee"
                                                                 deployConfig = Coffee.eval(data.toString())
                                                             when ".js"
-                                                                deployConfig = eval(data.toString())
+                                                                 eval("deployConfig = #{data.toString()}")
                                                             when ".json"
                                                                 deployConfig = JSON.parse(data.toString())
                                                             else
