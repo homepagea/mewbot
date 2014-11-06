@@ -1,13 +1,7 @@
 express = require 'express'
 
-###
-    if herokuUrl
-      herokuUrl += '/' unless /\/$/.test herokuUrl
-      @pingIntervalId = setInterval =>
-        HttpClient.create("#{herokuUrl}hubot/ping").post() (err, res, body) =>
-          @logger.info 'keep alive ping!'
-      , 1200000
-###
+
+
 class HttpServer
     constructor : (@mew,@brain)->
         @app = express()
