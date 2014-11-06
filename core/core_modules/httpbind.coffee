@@ -49,6 +49,10 @@ class HttpBind
     getHostBaseURL : ->
         return process.env.MEWBOT_HOST || "http://#{getLocalIP()}:#{@mew.port}"
 
+    bindMiddleware : (path,callback)->
+        do(path)=>
+            @mew.brain.httpManager.app.use path,callback
+
     bindUpload : (path,folder,callback)->
         do(folder)=>
             @bindHttp path,"post",(req,res,next)=>
@@ -58,7 +62,7 @@ class HttpBind
                     try
                         if req.files.file
                             tempPath = req.files.file.path
-                            @mew.logger.debug "uploading file : #{files.file}"
+                            @mew.logger.debug "uploading file : #{req.files.file.name}"
                             findTargetPath folder,req.files.file.name,0,(targetPath)=>
                                 try
                                     Fse.move tempPath,targetPath,(err)=>
@@ -68,13 +72,16 @@ class HttpBind
                                             return res.json({status:'ERROR',msg : err.toString()})
                                         else
                                             try
-                                                callback targetPath,req,(err)=>
+                                                callback targetPath,req,(err,path)=>
                                                     if err
                                                         @mew.logger.error err
                                                         Fs.unlink tempPath
                                                         return res.json({status:'ERROR',msg : err.toString()})
                                                     else
-                                                        return res.json({status:'SUCCESS',path : Path.basename(targetPath)})
+                                                        if path
+                                                            return res.json({status:'SUCCESS',path : path})
+                                                        else
+                                                            return res.json({status:'SUCCESS',path : Path.basename(targetPath)})
                                             catch ex
                                                 @mew.logger.error "#{ex.stack}"
                                                 Fs.unlink tempPath

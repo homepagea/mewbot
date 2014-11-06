@@ -17,6 +17,7 @@ class HttpServer
         pass    = process.env.HTTP_PASSWORD
         @app.use express.basicAuth user, pass if user and pass
         @app.use express.query()
+        @app.use express.compress()
         @app.use express.bodyParser()
         @app.use express.cookieParser()
         @app.use express.session({secret:"MSESSIONID"})
