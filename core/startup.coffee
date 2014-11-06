@@ -5,6 +5,7 @@ MewBot   = require './mewbot.coffee'
 Fse      = require 'fs.extra'
 Cps      = require 'child_process'
 Moment   = require 'moment'
+Coffee   = require 'coffee-script'
 
 checkDirectory = (path)->
     dataFile = Path.join __dirname,"..",path
@@ -41,6 +42,7 @@ Switches = [
     [ "-m" , "--module module", "check or get module from remote server" ],
     [ "--env kvp", "config enviorment key value pair using : <key>=<value>" ]
     [ "--deploy deployLocation", "deploy mewbot to target location" ]
+    [ "--deploy-config deployConfig", "deploy config file location" ]
 ]
 
 Options = 
@@ -61,6 +63,7 @@ Options =
     build             :     false
     port              :     0
     deploy            :     ""
+    deployConfig      :     ""
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -90,6 +93,10 @@ Parser.on "env",(opt,value)->
 Parser.on "profile",(opt,value)->
     if value and value.length and /^[a-zA-Z0-9]+$/.test(value)
         Options.profile = value
+
+Parser.on "deploy-config",(opt,value)->
+    if value
+        Options.deployConfig = value
 
 Parser.on "role",(opt,value)->
     if value and value.length
@@ -241,7 +248,7 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,"..","var"),(err,pointer)->
             mewbot.logger.info "#{mewbot.name} archive data complete at #{packFile}"
             process.exit 0
-    else if Options.deploy and Options.deploy.length
+    else if Options.deploy
         Fs.exists Options.deploy,(exists)->
             if exists is false
                 Fse.mkdirRecursiveSync Options.deploy
@@ -261,12 +268,38 @@ mewbot.init Options.profile,(err)->
                                         mewbot.logger.error "#{mewbot.name} deploy error : target location [#{Options.deploy}] is not empty"
                                         process.exit 1
                                     else
-                                        mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy}"
-                                        mewbot.deployer.deployTo Options.deploy,(err)->
-                                            if err
-                                                mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
-                                            else
-                                                mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                                        if Options.deployConfig
+                                            Fs.readFile Options.deployConfig,(err,data)->
+                                                if err
+                                                    mewbot.logger.error "#{mewbot.name} deploy at : #{Options.deploy} failed : #{err.toString()}"
+                                                else
+                                                    deployConfig = {}
+                                                    try
+                                                        switch Path.extname(Options.deployConfig)
+                                                            when ".coffee"
+                                                                deployConfig = Coffee.eval(data.toString())
+                                                            when ".js"
+                                                                deployConfig = eval(data.toString())
+                                                            when ".json"
+                                                                deployConfig = JSON.parse(data.toString())
+                                                            else
+                                                                throw new Error("type not supported")
+                                                    catch e
+                                                        mewbot.logger.error "#{mewbot.name} deploy at : #{Options.deploy} failed : #{e.toString()}"
+                                                        process.exit(1)
+                                                    mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy} , with config : #{JSON.stringify(deployConfig,null,4)}"
+                                                    mewbot.deployer.deployTo Options.deploy,deployConfig,(err)->
+                                                        if err
+                                                            mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                                                        else
+                                                            mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                                        else
+                                            mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy}"
+                                            mewbot.deployer.deployTo Options.deploy,(err)->
+                                                if err
+                                                    mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                                                else
+                                                    mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
                             else
                                 mewbot.logger.error "#{mewbot.name} deploy error : target location [#{Options.deploy}] is not a directory"
                                 process.exit 1
