@@ -33,6 +33,32 @@ class HttpBind
     constructor : (@mew)->
         @staticPathDefinitionPool = {}
 
+    handleHttpAuth : (req,res,possibleAuthPool,next) ->
+        authorization = req.headers.authorization
+        if req.user
+            next()
+        else
+            unless authorization
+                res.statusCode = 401
+                res.setHeader('WWW-Authenticate', 'Basic realm="Authorization Required"')
+                return res.end('Unauthorized')
+            parts = authorization.split(' ')
+            if parts.length isnt 2
+                return res.send 400
+            scheme = parts[0]
+            credentials = new Buffer(parts[1], 'base64').toString()
+            index = credentials.indexOf(':')
+            if 'Basic' isnt scheme || index < 0
+                return res.send 400
+            user = credentials.slice(0, index)
+            pass = credentials.slice(index + 1)
+            if possibleAuthPool[user] and possibleAuthPool[user] is pass
+                next()
+            else
+                res.statusCode = 401
+                res.setHeader('WWW-Authenticate', 'Basic realm="Authorization Required"')
+                return res.end('Unauthorized')
+
     bindStatic : (context,location)->
         if location and context
             if Fs.existsSync(location)
