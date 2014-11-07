@@ -101,6 +101,17 @@ initLocationBasicHirastructor = (location,callback)->
                             else
                                 callback()
 
+initIgnoreProfile = (location,config,callback)->
+    if config.ignores and Array.isArray(config.ignores)
+        ignoreFileContent = ""
+        for ignore in config.ignores
+            ignoreFileContent = "#{ignoreFileContent}\n#{ignore}"
+        ignoreFile = getLocationFile(location,".gitignore")
+        Fs.writeFile ignoreFile,ignoreFileContent,callback
+    else
+        callback()
+
+
 initLocationProfile = (location,config,callback)->
     if config.profile
         profileFileContent = ""
@@ -198,7 +209,9 @@ class DeployerManager
                                         initLocationProfile location,config,(err)=>
                                             return callback(err) if err
                                             initLocationDataCopy @mew,location,config,(err)=>
-                                                callback(err)
+                                                return callback(err) if err
+                                                initIgnoreProfile location,config,(err)=>
+                                                    callback(err)
                         else
                             callback("location is not a directory")
         else
