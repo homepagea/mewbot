@@ -3,6 +3,8 @@ Fs             = require 'fs'
 Log            = require 'log'
 Os             = require 'os'
 Fse            = require 'fs.extra'
+Moment         = require 'moment'
+
 checkPermission = (file, mask, cb)->
     Fs.stat file,(error, stats)->
         if (error)
@@ -101,23 +103,28 @@ initLocationBasicHirastructor = (location,callback)->
                             else
                                 callback()
 
-initIgnoreProfile = (location,config,callback)->
+initIgnoreProfile = (mew,location,config,callback)->
+    ignoreContentArray = ["/var/log","/var/conf/backup"]
     if config.ignores and Array.isArray(config.ignores)
-        ignoreFileContent = ""
         for ignore in config.ignores
-            ignoreFileContent = "#{ignoreFileContent}\n#{ignore}"
-        ignoreFile = getLocationFile(location,".gitignore")
-        Fs.writeFile ignoreFile,ignoreFileContent,callback
-    else
-        callback()
+            unless ignore in ignoreContentArray
+                ignoreContentArray.push ignore
+    ignoreFileContent = ""
+    mew.logger.debug "#{mew.name} deploy with ignore: #{JSON.stringify(ignoreContentArray,null,4)}"
+    for ignore in ignoreContentArray
+        ignoreFileContent = "#{ignoreFileContent}\n#{ignore}"
+    ignoreFileContent = "#{ignoreFileContent}\n"
+    ignoreFile = getLocationFile(location,".gitignore")
+    Fs.writeFile ignoreFile,ignoreFileContent,callback
 
 
-initLocationProfile = (location,config,callback)->
+initLocationProfile = (mew,location,config,callback)->
     if config.profile
+        mew.logger.debug "#{mew.name} deploy with config : #{JSON.stringify(config.profile,null,4)}"
         profileFileContent = ""
         profileFile = getLocationFile(location,"/var/conf/default")
         for key of config.profile
-            if typeof key is 'string' and typeof config.profile[key] is 'string'
+            if typeof key is 'string' and typeof config.profile[key] isnt 'object'
                 profileFileContent = "#{profileFileContent}\n#{key}=#{config.profile[key]}"
         Fs.writeFile profileFile,profileFileContent,callback
     else
@@ -200,17 +207,20 @@ class DeployerManager
                         callback(err)
                     else
                         if stat.isDirectory()
+                            if typeof config.profile is 'undefined'
+                                config.profile={}
+                            config.profile.MEWBOT_DEPLOY_DATE = new Moment().format()
                             initLocationBasicHirastructor location,(err)=>
                                 return callback(err) if err
                                 initLocationModule location,config,(err)=>
                                     return callback(err) if err
                                     initLocationService location,config,(err)=>
                                         return callback(err) if err
-                                        initLocationProfile location,config,(err)=>
+                                        initLocationProfile @mew,location,config,(err)=>
                                             return callback(err) if err
                                             initLocationDataCopy @mew,location,config,(err)=>
                                                 return callback(err) if err
-                                                initIgnoreProfile location,config,(err)=>
+                                                initIgnoreProfile @mew,location,config,(err)=>
                                                     callback(err)
                         else
                             callback("location is not a directory")

@@ -73,7 +73,12 @@ class HttpBind
             throw new Error("location or context not defined")
 
     getHostBaseURL : ->
-        return process.env.MEWBOT_HOST || "http://#{getLocalIP()}:#{@mew.port}"
+        if process.env.MEWBOT_ROOTURL
+            return process.env.MEWBOT_ROOTURL
+        else if process.env.MEWBOT_HOST
+            return "#{process.env.MEWBOT_HOST}:#{@mew.port}"
+        else
+            return "http://#{getLocalIP()}:#{@mew.port}"
 
     bindMiddleware : (path,callback)->
         do(path)=>

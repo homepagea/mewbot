@@ -6,6 +6,7 @@ Fse      = require 'fs.extra'
 Cps      = require 'child_process'
 Moment   = require 'moment'
 Coffee   = require 'coffee-script'
+UUID     = require 'uuid'
 
 checkDirectory = (path)->
     dataFile = Path.join __dirname,"..",path
@@ -167,9 +168,14 @@ if Options.help
     process.exit 0
 
 mewbot = new MewBot Options
+console.log "==================================================================================="
 
 mewbot.init Options.profile,(err)->
     mewbot.logger.debug "#{mewbot.name} init complete with option : #{JSON.stringify(mewbot.options,null,4)}"
+
+    if process.env.MEWBOT_DEPLOY_DATE
+        mewbot.logger.debug "#{mewbot.name} instance deploy version : #{process.env.MEWBOT_DEPLOY_DATE}"
+
     if Options.update and process.platform isnt "win32"
         ###
         handle update argument
@@ -212,7 +218,7 @@ mewbot.init Options.profile,(err)->
                         process.exit 0
                 moduleBuildCallback()
         stdin = process.openStdin()
-    else if Options.archive.length
+    else if Options.archive
         ###
         handle archive argument
         ###
@@ -224,7 +230,7 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,".."),(err,pointer)->
             mewbot.logger.info "mewbot archive complete at #{packFile}"
             process.exit 0
-    else if Options.archiveModule.length
+    else if Options.archiveModule
         ###
         handle archive-module argument
         ###
@@ -236,7 +242,7 @@ mewbot.init Options.profile,(err)->
         archiver.zipFolder packFile,Path.join(__dirname,"..","mew_modules"),(err,pointer)->
             mewbot.logger.info "#{mewbot.name} archive module complete at #{packFile}"
             process.exit 0
-    else if Options.archiveData.length
+    else if Options.archiveData
         ###
         handle archive-module argument
         ###
@@ -249,18 +255,23 @@ mewbot.init Options.profile,(err)->
             mewbot.logger.info "#{mewbot.name} archive data complete at #{packFile}"
             process.exit 0
     else if Options.deploy
-        Fs.exists Options.deploy,(exists)->
+        zipped = false
+        deployFolder = Options.deploy
+        if Path.extname(Options.deploy) is ".zip"
+            zipped = true
+            deployFolder = mewbot.makeTmpDir("/module/deploy/#{UUID.v1()}")
+        Fs.exists deployFolder,(exists)->
             if exists is false
                 Fse.mkdirRecursiveSync Options.deploy
-            Fs.exists Options.deploy,(exists)->
+            Fs.exists deployFolder,(exists)->
                 if exists
-                    Fs.stat Options.deploy,(err,stat)->
+                    Fs.stat deployFolder,(err,stat)->
                         if err
                             mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
                             process.exit 1
                         else
                             if stat.isDirectory()
-                                Fs.readdir Options.deploy,(err,items)->
+                                Fs.readdir deployFolder,(err,items)->
                                     if err
                                         mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
                                         process.exit 1
@@ -288,16 +299,27 @@ mewbot.init Options.profile,(err)->
                                                         mewbot.logger.error "#{mewbot.name} deploy at : #{Options.deploy} failed : #{e.toString()}"
                                                         process.exit(1)
                                                     mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy} , with config : #{JSON.stringify(deployConfig,null,4)}"
-                                                    mewbot.deployer.deployTo Options.deploy,deployConfig,(err)->
+                                                    mewbot.deployer.deployTo deployFolder,deployConfig,(err)->
                                                         if err
                                                             mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
                                                         else
-                                                            mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                                                            if zipped
+                                                                archiver = mewbot.module("archiver")
+                                                                packFile = Options.deploy
+                                                                archiver.zipFolder packFile,deployFolder,(err,pointer)->
+                                                                    mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                                                                    process.exit 0
+                                                            else
+                                                                mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
                                         else
                                             mewbot.logger.info "#{mewbot.name} start to deploy at : #{Options.deploy}"
-                                            mewbot.deployer.deployTo Options.deploy,(err)->
-                                                if err
-                                                    mewbot.logger.error "#{mewbot.name} deploy error : #{err}"
+                                            mewbot.deployer.deployTo deployFolder,(err)->
+                                                if zipped
+                                                    archiver = mewbot.module("archiver")
+                                                    packFile = Options.deploy
+                                                    archiver.zipFolder packFile,deployFolder,(err,pointer)->
+                                                        mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
+                                                        process.exit 0
                                                 else
                                                     mewbot.logger.info "#{mewbot.name} deploy at : #{Options.deploy} success"
                             else
@@ -348,4 +370,5 @@ mewbot.init Options.profile,(err)->
         if no special argument is included, start run mewbot
         ###
         mewbot.logger.info "mewbot start running on : #{new Moment().format()}"
+        console.log "==================================================================================="
         mewbot.brain.run()
