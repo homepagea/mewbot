@@ -6,6 +6,15 @@ Validator = require 'validator'
 wildcard = require 'wildcard'
 uuid     = require 'uuid'
 
+buildServiceCallWrapper = (instance)->
+    serviceCallWrapper = {}
+    methodList = (k for k, v of instance when typeof v is 'function')
+    for method in methodList
+        do (method) ->
+            serviceCallWrapper[method] = ->
+                return instance[method](arguments)
+    return serviceCallWrapper
+
 class ServiceWrapper
     constructor : (@mew,@name)->
 
@@ -55,6 +64,13 @@ class ServiceManager
         else
             if callback
                 callback("service not found")
+                
+    service : (service)->
+        if @serviceIndex[service]
+            return buildServiceCallWrapper(@serviceIndex[service].instance)
+        else
+            throw new Error("service not defined")
+
     run: ->
         serviceWrapperArray=[]
 

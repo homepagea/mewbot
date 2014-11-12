@@ -66,6 +66,7 @@ class HttpBind
                     throw new Error("target static context already bind to : #{@staticPathDefinitionPool[context]}")
                 else
                     @mew.brain.httpManager.app.use context,express.static(location)
+                    @mew.logger.debug "http bind [#{context}] <=static=> [#{location}]"
                     @staticPathDefinitionPool[context]=location
             else
                 throw new Error("location not exists")
