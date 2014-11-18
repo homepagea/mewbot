@@ -148,6 +148,53 @@ initLocationModule = (location,config,callback)->
             callback()
     moduleArrayCallback()
 
+initLocationAdapter = (mew,location,config,callback)->
+    adapterArray = []
+    if config.adapters
+        for adapter of config.adapters
+            idxAdapter = adapter.indexOf("$")
+            adapterName = ""
+            adapterIndex = ""
+            if idxAdapter < 0
+                adapterName = adapter
+                adapterIndex = ""
+            else
+                adapterName = adapter.substr(0,idxAdapter)
+                adapterIndex = adapter.substr(idxAdapter+1)
+            if Fs.existsSync(getSourceFile("/mew_modules/@#{adapterName}/package.json"))
+                adapterArray.push {
+                    name : adapterName,
+                    index : adapterIndex,
+                    config : config.adapters[adapter]
+                }
+    adapterArrayCallback = ->
+        adapter = adapterArray.shift()
+        if adapter
+            mew.logger.debug "adapter : [#{adapter.name}$#{adapter.index}] deploy with config : #{JSON.stringify(adapter.config,null,4)}"
+            profileFileContent = ""
+            profileFile = getLocationFile(location,"/var/conf/@#{adapter.name}$#{adapter.index}")
+            for key of adapter.config
+                if typeof key is 'string' and typeof adapter.config[key] isnt 'object'
+                    profileFileContent = "#{profileFileContent}\n#{key}=#{adapter.config[key]}"
+            Fs.writeFile profileFile,profileFileContent,(err)->
+                if err
+                    callback(err)
+                else
+                    Fse.overwriteRecursive getSourceFile("/mew_modules/@#{adapter.name}"),makeLocationDir(location,"/mew_modules/@#{adapter.name}"),(err)->
+                        if err
+                            callback(err)
+                        else
+                            if typeof config.profile is 'undefined'
+                                config.profile={}
+                            if config.profile.MEWBOT_ADAPTER
+                                config.profile.MEWBOT_ADAPTER = "#{config.profile.MEWBOT_ADAPTER},#{adapter.name}[#{adapter.name}$#{adapter.index}]"
+                            else
+                                config.profile.MEWBOT_ADAPTER = "#{adapter.name}[#{adapter.name}$#{adapter.index}]"
+                            adapterArrayCallback()
+        else
+            callback()
+    adapterArrayCallback()
+
 initLocationService = (location,config,callback)->
     serviceArray = []
     if config.services
@@ -216,12 +263,14 @@ class DeployerManager
                                     return callback(err) if err
                                     initLocationService location,config,(err)=>
                                         return callback(err) if err
-                                        initLocationProfile @mew,location,config,(err)=>
+                                        initLocationAdapter @mew,location,config,(err)=>
                                             return callback(err) if err
-                                            initLocationDataCopy @mew,location,config,(err)=>
+                                            initLocationProfile @mew,location,config,(err)=>
                                                 return callback(err) if err
-                                                initIgnoreProfile @mew,location,config,(err)=>
-                                                    callback(err)
+                                                initLocationDataCopy @mew,location,config,(err)=>
+                                                    return callback(err) if err
+                                                    initIgnoreProfile @mew,location,config,(err)=>
+                                                        callback(err)
                         else
                             callback("location is not a directory")
         else
