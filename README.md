@@ -4,23 +4,6 @@ Mewbot got idea from [hubot](https://github.com/github/hubot) and build its own 
 
 This repository provides a library that's NOT distributed by `npm` that you use for building your own bots.  See the [README.md](README.md) for details on getting up and running with your very own mewbot.
 
-## How mewbot works
-
-Mewbot can work in the following ways : 
-
-* build mode
-* archieve mode
-* update mode
-* run mode
-
-### build mode
-
-## How to extend mewbot
-
-Mewbot can be extended in three ways : module,service,adapter.
-
-### Module
-
 
 ## License
 
