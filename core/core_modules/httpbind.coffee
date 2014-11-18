@@ -33,6 +33,7 @@ class HttpBind
     constructor : (@mew)->
         @staticPathDefinitionPool = {}
 
+
     handleHttpAuth : (req,res,possibleAuthPool,next) ->
         authorization = req.headers.authorization
         if req.user

@@ -24,6 +24,7 @@ class MewBot
             @logger.error "#{err.stack}"
             @logger.error err
 
+
     init : (profile,callback)->
         @changeProfile profile,(err)=>
             if err
@@ -60,7 +61,8 @@ class MewBot
                             if service in @options.services is false
                                 @options.services.push service
                     @exportProfile "backup",(err)=>
-                            callback()
+                        @logger   = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
+                        callback()
 
     getDataFile : (externalPath) ->
         if externalPath

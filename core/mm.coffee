@@ -62,8 +62,7 @@ class ModuleManager
                 @mewbot.logger.error "loading mew module [#{moduleName}] failed"
                 throw new Error(error)
         else
-            #search module 
-            throw new Error("module not found")
+            throw new Error("module [#{moduleName}] not found")
 
     initModuleInstance : (moduleInstance) ->
         moduleObject = @actionModuleContainer[moduleInstance.name()]

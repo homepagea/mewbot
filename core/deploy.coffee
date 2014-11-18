@@ -104,7 +104,7 @@ initLocationBasicHirastructor = (location,callback)->
                                 callback()
 
 initIgnoreProfile = (mew,location,config,callback)->
-    ignoreContentArray = ["/var/log","/var/conf/backup"]
+    ignoreContentArray = ["/var/log","/var/conf/backup","npm-debug.log",".bin"]
     if config.ignores and Array.isArray(config.ignores)
         for ignore in config.ignores
             unless ignore in ignoreContentArray

@@ -94,7 +94,8 @@ class Brain extends EventEmitter
         @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,"",(response)=>
             response.replyText rebotRules
 
-        
+        process.on "exit",(code)=>
+            @mew.logger.info "mewbot stop running on : #{new Moment().format()}"
 
 
 
