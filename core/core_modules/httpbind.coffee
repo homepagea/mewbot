@@ -4,17 +4,7 @@ Path = require 'path'
 express = require 'express'
 os      = require 'os'
 
-getLocalIP = ->
-    ifaces = os.networkInterfaces()
-    addresses = []
-    for dev of ifaces
-        ifaces[dev].forEach (details)->
-            if details.family is 'IPv4' and details.internal is false
-                addresses.push(details.address)
-    if addresses.length is 0
-        return "127.0.0.1"
-    else
-        return addresses[0]
+
 
 
 findTargetPath = (folder,filename,index,callback)->
@@ -32,6 +22,18 @@ findTargetPath = (folder,filename,index,callback)->
 class HttpBind
     constructor : (@mew)->
         @staticPathDefinitionPool = {}
+
+    getLocalIP : ->
+        ifaces = os.networkInterfaces()
+        addresses = []
+        for dev of ifaces
+            ifaces[dev].forEach (details)->
+                if details.family is 'IPv4' and details.internal is false
+                    addresses.push(details.address)
+        if addresses.length is 0
+            return "127.0.0.1"
+        else
+            return addresses[0]
 
 
     handleHttpAuth : (req,res,possibleAuthPool,next) ->
@@ -80,7 +82,7 @@ class HttpBind
         else if process.env.MEWBOT_HOST
             return "#{process.env.MEWBOT_HOST}:#{@mew.port}"
         else
-            return "http://#{getLocalIP()}:#{@mew.port}"
+            return "http://#{@getLocalIP()}:#{@mew.port}"
 
     bindMiddleware : (path,callback)->
         do(path)=>
