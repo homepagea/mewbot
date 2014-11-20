@@ -1,11 +1,128 @@
-# Mewbot
 
-Mewbot got idea from [hubot](https://github.com/github/hubot) and build its own chat bot system to make it a more flexible framework for company or personal robot. 
+# 1. 什么是mewbot
 
-This repository provides a library that's NOT distributed by `npm` that you use for building your own bots.  See the [README.md](README.md) for details on getting up and running with your very own mewbot.
+Mewbot是一个通过模块，消息适配器，服务来的基础通信接口程序和开发框架。其特征如下：
+1 通过消息适配器来接收发送消息。(详见3.2消息适配器)
+2 通过模块来管理处理代码，实现重用。(详见 2.1模块)
+3 通过服务来提供对外消息和服务接口。(详见 2.2服务)
+
+# 2. mewbot是如何工作的
+
+## 2.1 运行，模式，启动和流程
+
+Mewbot通过两种方式启动，如果你在系统中安装过coffescript的话，可以通过coffee去运行/core/startup.coffee来启动mewbot。亦或者通过/bin/mewbot.sh来启动mewbot。
+
+如果要把mewbot运行为服务，建议使用/bin/mewbot来进行控制，分别有start stop restart run 四种模式。这个时候，mewbot会调用forever模块，把自己运行为一个服务。
+
+Mewbot拥有多种工作模式，主要通过命令行参数来控制，也就是在上述的两种启动方式后加上参数：
+
+决定工作方式主要有这么一些命令行选项：
+
+--update : 更新模式，mewbot会尝试通过git来更新自己，保持核心代码和远程一致。
+
+--archieve: 打包备份模式，mewbot会尝试将自己打包备份到指定路径。如果没有指定路径，那么会在自身的临时文件夹下自动产生当前全部内容的备份。
+
+--deploy: 部署模式，mewbot会尝试将自己部署到目标目录或压缩文件，如果目录为空或者目标地址以zip结尾，那么就开始部署。部署的时候，还可以指定 --deploy-config 来指定部署配置文件。(5.5 部署和配置)
+
+--test : 测试模式，mewbot会尝试运行位于testrc目录下的文件作为测试，如果没有指定，则运行全部测试。(详见6测试)
+
+--build：构建模式，mewbot会将目前位于mew_modules下的模块，服务，消息适配器，通过命令：npm rebuild --build-from-source进行构建，即有些模块会需要通过原生的node二进制接口进行扩展。
+
+如果没有以上参数改变模式，那么会进入运行模式，按照2.1.2 描述的运行流程运行。
+
+其他常用的命令行选项有：
+
+--name: 指定当前mewbot的名字。(详见 5.6 用户管理)
+
+--service: 指定运行启动后加载的服务的名称。
+
+--port:指定目标启动后运行的http服务绑定的端口。
+
+--debug:能够将日志记录器的模式改为debug，以看到更详细的日志输出。(见5.1 日志)
+
+--profile:能够指定加载的配置文件名称。
+
+--help:打印所有的帮助信息。
+
+### 2.1.1 预加载
+
+无论运行哪种模式，mewbot总会进行预加载工作，主要包括：
+
+1 创建目录，包括mew_modules(所有扩展模块的安装地点。)，/var/data(一般数据文件存放地点)，/var/conf(配置文件存放地点)，/var/log(日志文件mewbot.log存放地点),/var/run(运行时文件存放地点，主要是forever服务的pid文件), ${tmp}/${name}-${port}(mewbot会在系统临时文件目录下创建一个以自己名字—端口命名的文件夹，来存放临时文件。)
+
+2 读取配置，能够将位于/var/conf下的配置文件读入作为系统环境变量。默认的配置文件为default.配置文件以xx=yy的方式一行行读取，并且覆盖预先设定的环境变量。
+
+3 初始化系统和参数。系统将初始化模块管理服务，日志服务以及配置一些基本参数，如：没有指定端口的话，则会去寻找当前系统的空闲端口(从8000开始逐个寻找)。
+
+4 加载核心模块。系统自带以下的核心模块：
+
+4.1 httpbind：用于管理和配置mewbot的http服务，mewbot的http服务是基于expressjs实现的，因此操作方式和express一致。(详见5.2 http服务)
+
+4.2 archieve：压缩模块，这个模块使用js进行zip压缩。
+
+### 2.1.2 运行后流程
+
+系统进入运行模式后，即预加载过程完成后。系统将执行以下步骤：
+
+1 启动所有的服务和消息适配器。
+
+2 配置默认的消息规则。(详见3.3 消息规则)。
+
+之后系统便进入正常运行状态。
 
 
-## License
+## 2.2 模块和模块管理
 
-Copyright (c) 2011-2014 GitHub, Inc. See the LICENSE file for license rights and
-limitations (MIT).
+在mewbot中一个重要概念即为模块。模块是一个全局单例的ioc框架，通过模块管理系统，mewbot实现对系统的解耦，因此任何模块，服务或者消息适配器在创建阶段，都不需要去关心依赖关系。
+
+### 2.2.1 模块的引用
+
+只要通过@mew.module("模块名称")既可获得其他模块接口的引用。值得注意的是，该引用本质上是目标模块实例的wrapper，因此只有其方法才能被调用，内部成员变量是无法访问的，通过这个体系来保护模块的资源。
+
+另外，@mew是mewbot的实例，通常在创建模块，服务和消息适配器的实例的时候，mewbot会将自己作为实例作为构造函数参数(通常是第一个)传递给模块，服务和消息适配器。
+
+### 2.2.2 自定义模块
+
+如果要自定义模块的话，需要在目录mew_modules下创建一个命名由数字和字母组成的文件夹，并且在其中放入package.json，mewbot通过required的方式读取目标目录的模块类。
+
+只要package.json按正常的nodejs模块规则定义。mewbot将实例化主文件导出的类，并且传递自身作为唯一构造函数参数。
+
+如此模块便创建完成。
+
+值得注意的是，由于系统的cps特性，没有任何引用的模块是不会被加载的。
+
+
+## 2.3 服务
+
+服务有别于模块不同的地方在于：
+
+服务在系统进入运行状态后，将会调用服务实例的start方法来启动该服务，由此服务
+
+# 3 消息机制
+
+## 3.1 消息模型
+
+## 3.2 消息适配器
+
+## 3.3 消息规则
+
+# 4 集群，协作和角色
+
+# 5 核心功能
+
+## 5.1 日志
+
+## 5.2 http服务
+
+## 5.3 rpc
+
+## 5.4 文件管理
+
+## 5.5 部署和配置
+
+## 5.6 用户管理
+
+# 6 测试
+
+# 7 mewbot扩展仓库
+
