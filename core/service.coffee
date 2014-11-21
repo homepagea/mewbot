@@ -36,6 +36,7 @@ class ServiceWrapper
                                 @mew.logger.debug "reading service [#{@name}] config error : #{e}"
                         @instance = new serviceClass @mew,serviceConfig
                         if @instance instanceof Mew.Service
+                            @instance.serviceName = @name
                             @mew.addRpcRespond @name,@instance,Mew.Service.ignored_functions
                             try
                                 @instance.start callback
