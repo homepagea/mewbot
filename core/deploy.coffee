@@ -68,7 +68,7 @@ initLocationDataCopy  = (mew,location,config,callback)->
                                         else
                                             dataCopyCallback()
                     else
-                        callback("data file to copy : [#{data}] doesnt exists")
+                        dataCopyCallback()
             else
                 callback()
         dataCopyCallback()

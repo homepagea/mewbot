@@ -66,12 +66,18 @@ class HttpBind
     bindStatic : (context,location)->
         if location and context
             if Fs.existsSync(location)
+                bindFunction = {
+                    route : context,
+                    handle : express.static(location)
+                }
                 if @staticPathDefinitionPool[context]
-                    throw new Error("target static context already bind to : #{@staticPathDefinitionPool[context]}")
+                    for stack in @mew.brain.httpManager.app.stack
+                        if stack.route is context
+                            stack.handle = bindFunction.handle
                 else
-                    @mew.brain.httpManager.app.use context,express.static(location)
+                    @mew.brain.httpManager.app.use context,bindFunction.handle
                     @mew.logger.debug "http bind [#{context}] <=static=> [#{location}]"
-                    @staticPathDefinitionPool[context]=location
+                @staticPathDefinitionPool[context]=bindFunction
             else
                 throw new Error("location not exists")
         else
