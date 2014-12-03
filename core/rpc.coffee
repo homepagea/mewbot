@@ -145,6 +145,8 @@ class RPCManager
                                                 msg : err.toString() ,
                                                 code : 590
                                             }
+                                            if err.stack
+                                                @mew.logger.error "#{err.stack}"
                                     if result
                                         response.result = result
                                     try

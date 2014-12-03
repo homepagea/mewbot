@@ -56,6 +56,7 @@ class HttpBind
             user = credentials.slice(0, index)
             pass = credentials.slice(index + 1)
             if possibleAuthPool[user] and possibleAuthPool[user] is pass
+                req.user = user
                 next()
             else
                 res.statusCode = 401
