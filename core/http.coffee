@@ -15,6 +15,14 @@ class HttpServer
         @app.use express.bodyParser()
         @app.use express.cookieParser()
         @app.use express.session({secret:"MSESSIONID"})
+        if process.env.HTTP_ENABLE_MONITOR
+            @app.use (req,res,next) =>
+                start = new Date()
+                res.on "finish",=>
+                    end = new Date()
+                    elapsed = end - start
+                    @mew.logger.debug "mewbot finished http request to url : #{req.originalUrl} , end with status code [#{res.statusCode}] and time elapsed [#{elapsed}ms] \n"
+                next()
         try
             @app.listen @mew.port
             @mew.logger.debug "start http server success at port : #{@mew.port}"

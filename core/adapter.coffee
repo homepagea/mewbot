@@ -9,15 +9,20 @@ uuid     = require 'uuid'
 isRegex = (value)->
     return Object.prototype.toString.call(value) is '[object RegExp]';
 
-checkAdapterInstance = (brain,name,profileName,adapterInstance,callback)->
+checkAdapterInstance = (adapterManager,name,profileName,adapterInstance,callback)->
     if adapterInstance instanceof Mew.Adapter or adapterInstance instanceof Mew.Adapter.MultiAdapter
-        if typeof brain.adapterPool[name] is 'undefined'
-            brain.adapterPool[name] = {}
+        if typeof adapterManager.adapterPool[name] is 'undefined'
+            adapterManager.adapterPool[name] = {}
         else 
             if (adapterInstance instanceof Mew.Adapter.MultiAdapter) isnt true
                 return callback("Not a MultiAdapter","#{name}[#{profileName}]")
-        brain.adapterPool[name][profileName]=adapterInstance
-        brain.adapterIndex[adapterInstance.uuid]=adapterInstance
+        adapterInstance.uuid = uuid.v1().toString()
+        adapterInstance.adapterName = name
+        adapterManager.adapterPool[name][profileName]=adapterInstance
+        adapterManager.adapterIndex[adapterInstance.uuid]=adapterInstance
+        adapterManager.mew.brain.userManager.data[adapterInstance.uuid]={
+            users : {}
+        }
         callback(null,"#{name}[#{profileName}]")
     else
         callback("Not a MewAdapter","#{name}[#{profileName}]")
@@ -102,8 +107,9 @@ class AdapterManager
                                 externOptions[conEntrys[0].replace(/(^\s*)|(\s*$)/g,"")]=conEntrys[1].replace(/(^\s*)|(\s*$)/g,"")
                         callback(externOptions)
                     else
-                        callback(null)
+                        callback({})
             else
+                @mew.logger.debug "mew adapter config profile [#{confFile}] not found"
                 callback(null)
 
     initAdapters : (the_adapters,callback)->

@@ -3,7 +3,6 @@ Mew      = require 'mew'
 
 class ShellAdapter extends Mew.Adapter 
     constructor : (@mew,@externOpts)->
-        super @mew,"shell"
         
     sendText : (envelop,strings ...)->
         unless process.platform is 'win32'

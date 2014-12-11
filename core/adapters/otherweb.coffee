@@ -8,7 +8,6 @@ mbus_functions = [
 
 class OTHERWebAdapter extends Mew.Adapter.MultiAdapter 
     constructor : (@mew,@profileName,@externOpts)->
-        super @mew,"otherweb",@profileName
         @connected = false
         
     sendText : (envelop,strings ...)->

@@ -198,7 +198,6 @@ class HttpBind
                     catch ex
                         @mew.logger.error "#{ex.stack}"
                         return res.json({status:'ERROR',msg : "#{ex.toString()}"})
-
     bindHttp : (path,type,callback) ->    
         if path and (typeof path is "string" or Object.prototype.toString.call(path) is "[object RegExp]")
             if typeof type is 'function'
