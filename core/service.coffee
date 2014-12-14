@@ -90,6 +90,8 @@ class ServiceManager
                     if err
                         delete @serviceIndex[wrapperInstance.name]
                         @mew.logger.error "service [#{wrapperInstance.name}] start error : #{err}"
+                        if err.stack
+                            @mew.logger.debug "#{err.stack}"
                     else
                         @mew.logger.debug "service [#{wrapperInstance.name}] start complete"
                     try

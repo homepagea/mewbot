@@ -3,8 +3,16 @@ Fse  = require 'fs.extra'
 Path = require 'path'
 express = require 'express'
 os      = require 'os'
+url = require 'url'
+http = require 'http'
 
-
+httpProxyHeaderFilter = {
+    "connection" : true,
+    "cache-control"  : true
+    "user-agent" : true,
+    "accept-language" : true,
+    "cookie" : true
+}
 
 
 findTargetPath = (folder,filename,index,callback)->
@@ -94,6 +102,46 @@ class HttpBind
     bindMiddleware : (path,callback)->
         do(path)=>
             @mew.brain.httpManager.app.use path,callback
+
+    bindProxy : (path,target)->
+        if typeof path is "string"
+            unless path.match /^\/(.*)$/
+                path = "/" + path
+            unless path.match /^(.*)\/$/
+                path =  path + "/"
+            pathURLMathRegex = eval("/^#{path.replace(/\//g,'\\/')}(.*)$/")
+            targetURL = url.parse(target)
+            @bindHttp pathURLMathRegex,(req,res)=>
+                rawBody = ""
+                urlToRequest = req.originalUrl
+                unless path.match /^\/(.*)$/
+                    urlToRequest = "/" + urlToRequest
+                unless path.match /^(.*)\/$/
+                    urlToRequest =  urlToRequest + "/"
+                urlToRequest = urlToRequest.replace(path,"/")
+                headers = {}
+                for hkey of req.headers
+                    if httpProxyHeaderFilter[hkey]
+                        headers[hkey]=req.headers[hkey]
+                req.on "data" , (chunk)=>
+                    rawBody = rawBody + chunk
+                req.on "end" ,=>
+                    opt = {
+                        host: targetURL.host ,
+                        port: targetURL.port || 80 ,
+                        method:req.method,
+                        path: urlToRequest,
+                        headers:headers
+                    }
+                    proxiedRequest = http.request opt,(pres)=>
+                        pres.pipe(res)
+                    if rawBody
+                        proxiedRequest.write rawBody
+
+                    proxiedRequest.end()
+
+        else
+            throw new Error("only string path supported")
 
     bindUpload : (path,folder,callback)->
         do(folder)=>
