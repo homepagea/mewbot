@@ -338,10 +338,10 @@ mewbot.init Options.profile,(err)->
         afterConfigCallback = (err)->
             if err
                 mewbot.logger.error "#{mewbot.name} config error : #{err}"
-                process.exist 1
+                process.exit 1
             else
                 mewbot.logger.info "#{mewbot.name} config success"
-                process.exist 0
+                process.exit 0
         Fs.exists Options.config,(exists)->
             if exists
                 try

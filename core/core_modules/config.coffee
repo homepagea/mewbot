@@ -53,7 +53,7 @@ checkAdapters = (cm,config,callback) ->
                 cm.adapterExists adapter.name,(exists)->
                     if exists
                         profileFileContent = ""
-                        profileFile = getLocationFile(__dirname,"..","..","var","conf","@#{adapter.name}$#{adapter.index}")
+                        profileFile = Path.join(__dirname,"..","..","var","conf","@#{adapter.name}$#{adapter.index}")
                         for key of adapter.config
                             if typeof key is 'string' and typeof adapter.config[key] isnt 'object'
                                 profileFileContent = "#{profileFileContent}\n#{key}=#{adapter.config[key]}"
