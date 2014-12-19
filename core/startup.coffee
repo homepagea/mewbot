@@ -31,6 +31,7 @@ Switches = [
     [ "-r" , "--role client|server", "role of this mewbot" ],
     [ "-h" , "--help", "print help information" ],
     [ "-p" , "--profile profile", "config profile of this mewbot" ],
+    [ "-c" , "--config config", "config this mewbot with config specified" ],
     [ "--port port", "config port of this mewbot" ],
     [ "--update", "update mewbot" ],
     [ "-B" , "--build", "build mewbot" ],
@@ -65,6 +66,7 @@ Options =
     port              :     0
     deploy            :     ""
     deployConfig      :     ""
+    config            :     ""
 
 Parser = new OptParse.OptionParser(Switches)
 Parser.banner = "Usage mewbot [options]"
@@ -94,6 +96,10 @@ Parser.on "env",(opt,value)->
 Parser.on "profile",(opt,value)->
     if value and value.length and /^[a-zA-Z0-9]+$/.test(value)
         Options.profile = value
+
+Parser.on "config",(opt,value)->
+    if value
+        Options.config = value
 
 Parser.on "deploy-config",(opt,value)->
     if value
@@ -328,7 +334,34 @@ mewbot.init Options.profile,(err)->
                 else
                     mewbot.logger.error "#{mewbot.name} deploy error : permission error"
                     process.exit 1
-    else if Options.test and Options.test.length
+    else if Options.config
+        afterConfigCallback = (err)->
+            if err
+                mewbot.logger.error "#{mewbot.name} config error : #{err}"
+                process.exist 1
+            else
+                mewbot.logger.info "#{mewbot.name} config success"
+                process.exist 0
+        Fs.exists Options.config,(exists)->
+            if exists
+                try
+                    mewbot.module("config").readAndConfig Options.config,afterConfigCallback
+                catch ex
+                    mewbot.logger.error "#{mewbot.name} config error : #{ex.stack}"
+                    process.exist 1
+            else
+                pwdConfigFile = Path.join(process.pwd,Options.config)
+                Fs.exists pwdConfigFile,(exists)->
+                    if exists
+                        try
+                            mewbot.module("config").readAndConfig pwdConfigFile,afterConfigCallback
+                        catch ex
+                            mewbot.logger.error "#{mewbot.name} config error : #{ex.stack}"
+                            process.exist 1    
+                    else
+                        mewbot.logger.error "#{mewbot.name} config error : config file not found"
+                        process.exist 1
+    else if Options.test
         ###
         handle test argument
         ###
