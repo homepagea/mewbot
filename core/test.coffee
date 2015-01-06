@@ -11,7 +11,28 @@ class TestInstance
 
 class TestManager
     constructor : (@mewbot)->
-        
+
+    listAvaliableTests : (callback)->
+        Fs.readdir Path.join(__dirname,"..","testrc"),(err,files)=>
+            if err
+                callback(err)
+            else
+                testsAvailable = []
+                testFileShiftCallback = =>
+                    file = files.shift()
+                    if file
+                        if Path.extname(file) is ".coffee"
+                            Fs.stat Path.join(__dirname,"..","testrc",file),(err,stat)=>
+                                if stat.isDirectory() is false
+                                    testsAvailable.push file.replace(/\.coffee/g,"")
+                                testFileShiftCallback()
+                        else
+                            testFileShiftCallback()
+                    else
+                        callback(null,testsAvailable)
+                testFileShiftCallback()
+
+
     runTest : (testScriptArray,callback)->
         testExecResult = { testcase : {} , success : 0 ,error : 0 , failed : 0}
         runTestCallback = =>
