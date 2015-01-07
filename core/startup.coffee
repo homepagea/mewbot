@@ -28,7 +28,7 @@ checkDirectory "/mew_modules"
 Switches = [
     [ "-n" , "--name name", "name of this mewbot" ],
     [ "-t" , "--test testcase", "test case to run" ],
-    [ "-r" , "--role client|server", "role of this mewbot" ],
+    [ "-r" , "--role client|consumer|broker", "role of this mewbot" ],
     [ "-h" , "--help", "print help information" ],
     [ "-p" , "--profile profile", "config profile of this mewbot" ],
     [ "-c" , "--config config", "config this mewbot with config specified" ],
@@ -162,6 +162,10 @@ Parser.on "deploy",(opt,value)->
         Options.deploy=value
     else
         Options.deploy=process.cwd()
+
+Parser.on "role",(opt,value)->
+    if value
+        Options.role = value
 
 Parser.parse process.argv
 

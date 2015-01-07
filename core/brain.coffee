@@ -10,6 +10,7 @@ AdapterManager = require './adapter.coffee'
 RuleManager    = require './rule.coffee'
 UserManager    = require './user.coffee'
 ServiceManager = require './service.coffee'
+ServerManager  = require './server.coffee'
 Response       = (require './rule.coffee').Response
 HttpServer     = require './http.coffee'
 Moment         = require 'moment'
@@ -32,7 +33,7 @@ class Brain extends EventEmitter
         @serviceManager = new ServiceManager @mew,@
         @rpcManager     = new RPCManager @mew,@
         @httpManager    = new HttpServer @mew,@
-        
+        @serverManager  = new ServerManager @mew
 
     addTextRespond : (rule,adpaterMatchRule,callback)->
         if callback and rule and isRegex(rule) and (typeof callback is 'function')
@@ -93,6 +94,15 @@ class Brain extends EventEmitter
 
         @addTextRespond /(what are )?the (three |3 )?(rules|laws)/i,"",(response)=>
             response.replyText rebotRules
+
+        @mew.logger.debug "mewbot runs in #{@mew.role} mode"
+
+        switch @mew.role
+            when "broker"
+                @serverManager.runBroker()
+                
+            when "consumer"
+                @serverManager.runConsumer()
 
         process.on "exit",(code)=>
             @mew.logger.info "mewbot stop running on : #{new Moment().format()}"

@@ -13,7 +13,6 @@ Portfinder     = require 'portfinder'
 class MewBot
     constructor : (@options)->
         @name     = @options.name
-        @role     = @options.role
         @logger   = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
         @mm       = new ModuleManager @
         @brain    = new Brain @
@@ -60,6 +59,7 @@ class MewBot
                         for service in process.env.MEWBOT_SERVICE.split(",")
                             if service in @options.services is false
                                 @options.services.push service
+                    @role = process.env.MEWBOT_ROLE || @options.role || "client"
                     @exportProfile "backup",(err)=>
                         @logger   = new Log process.env.MEWBOT_LOG_LEVEL or 'info'
                         callback()
