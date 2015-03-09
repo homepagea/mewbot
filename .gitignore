@@ -2,8 +2,8 @@
 /var/conf
 /var/run
 /var/data
-/mewbot.sublime-project
-/mewbot.sublime-workspace
+*.sublime-project
+*.sublime-workspace
 /script/*
 /testrc/*
 /mew_modules
