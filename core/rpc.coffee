@@ -227,11 +227,14 @@ class RPCManager
 
     makeRpcRequest : (adapterMatchRole,role,timeout,domain,method,params,callback)->
         
-    removeRpcRespond : (domain)->
+    removeRpcRespond : (domain,callback)->
         if @rpcInfoPool[domain]
             rpcmapRequestRegex = eval("/#{domain}:request:(.*)$/")
             delete @rpcInfoPool[domain]
             @brain.ruleManager.removeTextRespond rpcmapRequestRegex
+            callback()
+        else
+            callback("domain not found")
 
     addRpcRespond : (domain,object,ignored_functions,callback)->
         @removeRpcRespond domain
