@@ -20,14 +20,16 @@ class MewBot
         @updater  = new UpdateManager @
         @deployer = new DeployManager @
         process.on "uncaughtException",(err)=>
+            console.log err.stack
             @logger.error "#{err.stack}"
             @logger.error err
-
 
     init : (profile,callback)->
         @changeProfile profile,(err)=>
             if err
                 @logger.error err
+            else
+                @logger.debug "init profile update complete"
             Portfinder.getPort (err,port)=>
                 if err
                     @logger.error err
@@ -40,15 +42,19 @@ class MewBot
                             @port=process.env.MEWBOT_PORT
                         else
                             @port=port
+                    @logger.debug "init mewbot start atr port : #{@port}"
                             
                 if @options.nameDefined is false
                     if process.env.MEWBOT_NAME
                         @name = process.env.MEWBOT_NAME
-
+                @logger.debug "mewbot has been named into #{@name}"
                 tmpFolder = @getTmpFile()
                 Fs.exists tmpFolder,(exists)=>
                     if exists is false
-                        Fse.mkdirRecursiveSync tmpFolder
+                        try
+                            Fse.mkdirRecursiveSync tmpFolder
+                        catch ex
+                            @logger.error "#{ex.stack}"
                     if @options.adapter.length is 0
                         if process.env.MEWBOT_ADAPTER
                             for adapter in process.env.MEWBOT_ADAPTER.split(",")
