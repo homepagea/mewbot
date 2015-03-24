@@ -104,6 +104,8 @@ class Brain extends EventEmitter
             when "consumer"
                 @serverManager.runConsumer()
 
+            
+
         process.on "exit",(code)=>
             @mew.logger.info "mewbot stop running on : #{new Moment().format()}"
 

@@ -64,6 +64,7 @@ class AdapterManager
 
 
     addAdapter : (adapter,profileName,profile,callback) ->
+        @mew.logger.debug "init mew adapter : #{adapter}<#{profileName}>"
         if @adapterPool[adapter]
             if @adapterPool[adapter][profileName]
                 callback("same adapter with same profile already defined",adapter)
@@ -105,6 +106,7 @@ class AdapterManager
                                 conEntrys.push confLine.substr(0,confLine.indexOf("="))
                                 conEntrys.push confLine.substr(confLine.indexOf("=")+1)
                                 externOptions[conEntrys[0].replace(/(^\s*)|(\s*$)/g,"")]=conEntrys[1].replace(/(^\s*)|(\s*$)/g,"")
+                        @mew.logger.debug "reading adapter config file : #{confFile} with result : #{JSON.stringify(externOptions)}"
                         callback(externOptions)
                     else
                         callback({})

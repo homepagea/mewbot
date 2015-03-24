@@ -45,6 +45,7 @@ Switches = [
     [ "--env kvp", "config enviorment key value pair using : <key>=<value>" ]
     [ "--deploy deployLocation", "deploy mewbot to target location" ]
     [ "--deploy-config deployConfig", "deploy config file location" ]
+    [ "--deploy-exclude-forver", "exclude forever from deploy" ]
 ]
 
 Options = 
@@ -66,6 +67,7 @@ Options =
     port              :     0
     deploy            :     ""
     deployConfig      :     ""
+    deployExclude     :     []
     config            :     ""
 
 Parser = new OptParse.OptionParser(Switches)
@@ -162,6 +164,10 @@ Parser.on "deploy",(opt,value)->
         Options.deploy=value
     else
         Options.deploy=process.cwd()
+
+Parser.on "deploy-exclude-forver",(opt,value)->
+    if value 
+        Options.deployExclude.push value
 
 Parser.on "role",(opt,value)->
     if value

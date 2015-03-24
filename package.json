@@ -19,7 +19,7 @@
     "node": ">= 0.8.x",
     "npm": ">= 1.1.x"
   },
-  "main": "./core/mewbot.coffee",
+  "main": "./index.js",
   "bin": {
     "mewbot": "./node_modules/coffee-script/bin/coffee ./core/startup.coffee -D"
   },
