@@ -21,8 +21,8 @@ class MewBot
         @deployer = new DeployManager @
         process.on "uncaughtException",(err)=>
             console.log err.stack
-            @logger.error "#{err.stack}"
-            @logger.error err
+            #@logger.error "#{err.stack}"
+            #@logger.error err
 
     init : (profile,callback)->
         @changeProfile profile,(err)=>
