@@ -61,9 +61,9 @@ case $1 in
 	    	pidScript=$(findScriptPID)
 	    	kill $pidForever
 	    	kill $pidScript
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
+	    	$NODE $forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    else
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
+	    	$NODE $forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    fi	    
 	    ;;
     "run")
