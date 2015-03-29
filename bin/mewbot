@@ -24,6 +24,7 @@ pidfile=`readlink -e $PRGDIR/../var/run/mewbot.pid`
 logfile=`readlink -e $PRGDIR/../var/log/mewbot.log`
 monitor=`readlink -e $PRGDIR/../node_modules/forever/bin/monitor`
 forever=`readlink -e $PRGDIR/../node_modules/forever/bin/forever`
+forever=$NODE $forever
 
 findForeverPID() {
 	echo `ps -ef --width 2000|grep $monitor|sed '/grep/d'|awk '{print $2}'`
