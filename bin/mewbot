@@ -24,7 +24,7 @@ forever_dir=`readlink -e $PRGDIR/../var/run`
 pidfile=`readlink -e $PRGDIR/../var/run/mewbot.pid`
 logfile=`readlink -e $PRGDIR/../var/log/mewbot.log`
 monitor=`readlink -e $PRGDIR/../node_modules/forever/bin/monitor`
-forever=`readlink -e $PRGDIR/../forever.js`
+forever=`readlink -e $PRGDIR/../node_modules/forever/bin/forever`
 
 findForeverPID() {
 	echo `ps -ef --width 2000|grep $monitor|sed '/grep/d'|awk '{print $2}'`
@@ -41,7 +41,7 @@ case $1 in
 	        echo "mewbot already started"                                                
 	    	exit 1                                 
 	    else
-	    	$NODE $forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    fi
 	    ;;
 	"stop")
@@ -61,9 +61,9 @@ case $1 in
 	    	pidScript=$(findScriptPID)
 	    	kill $pidForever
 	    	kill $pidScript
-	    	$NODE $forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    else
-	    	$NODE $forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    fi	    
 	    ;;
     "run")
