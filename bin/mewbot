@@ -2,7 +2,7 @@
 PRG="$0"
 PRGDIR=`dirname "$PRG"`
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
-SCRIPT="$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee"
+SCRIPT=`readlink -e $PRGDIR/../index.js`
 SELF=`readlink -e $PRGDIR/mewbot`
 
 which jx > /dev/null 2>&1
@@ -30,7 +30,7 @@ findForeverPID() {
 }
 
 findScriptPID() {
-	echo `ps -ef --width 2000|grep $PRGDIR/../node_modules/coffee-script/bin/coffee|sed '/grep/d'|awk '{print $2}'`
+	echo `ps -ef --width 2000|grep $SCRIPT|sed '/grep/d'|awk '{print $2}'`
 }
 
 case $1 in
@@ -40,12 +40,12 @@ case $1 in
 	        echo "mewbot already started"                                                
 	    	exit 1                                 
 	    else
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    fi
 	    ;;
 	"stop")
 	    pidForever=$(findForeverPID)
-	    if [ -n "$pidForever" ]; then                                                
+	    if [ -n "$pidForever" ]; then
 	    	pidScript=$(findScriptPID)
 	    	kill $pidForever
 	    	kill $pidScript
@@ -60,13 +60,13 @@ case $1 in
 	    	pidScript=$(findScriptPID)
 	    	kill $pidForever
 	    	kill $pidScript
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    else
-	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a -c $SCRIPT
+	    	$forever start -p "$forever_dir" --pidFile "$pidfile" -l "$logfile" --uid "$forever_uid" -a $SCRIPT
 	    fi	    
 	    ;;
     "run")
-        $SCRIPT
+        $NODE $SCRIPT
         ;;
     "deploy")
 	    $SCRIPT --deploy $2
