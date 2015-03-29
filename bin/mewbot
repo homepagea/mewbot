@@ -4,11 +4,12 @@ PRGDIR=`dirname "$PRG"`
 PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:$PRGDIR/../node_modules/.bin:$PRGDIR/../node_modules/other-hubot/node_modules/.bin:$PATH
 SCRIPT="$PRGDIR/../node_modules/coffee-script/bin/coffee $PRGDIR/../core/startup.coffee"
 SELF=`readlink -e $PRGDIR/mewbot`
-NODE=node
 
 which jx > /dev/null 2>&1
 if [ $? == 0 ]; then
     NODE=jx
+else
+	NODE=node
 fi
 
 mkdir -p $PRGDIR/../var/log
