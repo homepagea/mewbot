@@ -1,0 +1,1 @@
+require('forever').cli.start();
